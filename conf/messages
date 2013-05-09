@@ -399,9 +399,6 @@ isdiah.telephone=Telephone
 isdiah.fax=Fax
 isdiah.url=Website Address
 
-isdiah.street= Address Street
-isdiah.municipality= City
-
 # Description
 isdiah.history=History of the Institution with Archival Holdings
 isdiah.geoculturalContext=Geographical and Cultural Context
@@ -504,9 +501,8 @@ isadg.conditionsArea=Conditions Area
 isadg.materialsArea=Materials Area
 isadg.controlArea=Control Area
 
-isadg.name=Name
+isadg.name=Title
 isadg.identifier=Identifier
-isadg.title=Title
 isadg.dates=Dates
 isadg.levelOfDescription=Level of Description
 isadg.collection=Collection
@@ -517,7 +513,7 @@ isadg.subseries=Subseries
 isadg.file=File
 isadg.item=Item
 isadg.creation=Creation
-isadg.extentAndMedium=Extent and Medium
+isadg.extentAndMedium=Extent and Medium of the Unit of Description
 isadg.languageCode=Language of Description
 isadg.adminBiogHistory=Administrative and Biographical History
 isadg.archivalHistory=Archival History
@@ -527,14 +523,14 @@ isadg.scopeAndContent=Scope and Content
 isadg.appraisal=Appraisal
 isadg.accruals=Accruals
 isadg.systemOfArrangement=System of Arrangement
-isadg.conditionsOfAccess=Conditions of Access
-isadg.conditionsOfReproduction=Conditions of Reproduction
+isadg.conditionsOfAccess=Conditions Governing Access
+isadg.conditionsOfReproduction=Conditions Governing Reproduction
 isadg.languageOfMaterials=Language(s) of Materials
 isadg.scriptOfMaterials=Script(s) of Materials
-isadg.physicalCharacteristics=Physical Characteristics
+isadg.physicalCharacteristics=Physical Characteristics and Technical Requirements
 isadg.findingAids=Finding Aids
-isadg.locationOfOriginals=Location of Originals
-isadg.locationOfCopies=Location of Copies
+isadg.locationOfOriginals=Existence and Location of Originals
+isadg.locationOfCopies=Existence and Location of Copies
 isadg.relatedUnitsOfDescription=Related Units of Description
 isadg.publicationNote=Publication Note
 isadg.archivistNote=Archivist Note
@@ -552,9 +548,3 @@ isadg.accessPoints.otherAccess=Other Access Points
 isadg.startDate=Start Date
 isadg.endDate=End Date
 
-
-#Icons
-icon.email = icon-envelope
-icon.telephone = icon-volume-down
-icon.fax = icon-print
-icon.web = icon-home
