@@ -43,8 +43,7 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
     FieldFacetClass(
       key="holderName",
       name=Messages("documentaryUnit.heldBy"),
-      param="holder",
-      render=s => Messages(s)
+      param="holder"
     ),
     FieldFacetClass(
       key="copyrightStatus",
@@ -217,9 +216,9 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
   }
 
   def deleteDescriptionPost(id: String, did: String) = deleteDescriptionPostAction(id, EntityType.DocumentaryUnitDescription, did) {
-      item => implicit userOpt => implicit request =>
-    Redirect(routes.DocumentaryUnits.get(item.id))
-        .flashing("success" -> Messages("confirmations.itemWasDeleted", item.id))
+      ok => implicit userOpt => implicit request =>
+    Redirect(routes.DocumentaryUnits.get(id))
+        .flashing("success" -> Messages("confirmations.itemWasDeleted", id))
   }
 
   def delete(id: String) = deleteAction(id) {
@@ -361,26 +360,6 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
       }
     }
   }
-
-  /**
-   * Create an access point link for this object
-   * @return
-   */
-  def createLinkJson(id: String, apid: String) = createLink(id, apid)
-
-  /**
-   * Create an access point link for this object, in the process creating an access point
-   * @return
-   */
-  def createAccessPointLinkJson(id: String, desc: String) = createAccessPointLink(id, desc)
-
-  /**
-   * Get the link for a given document/access point
-   * @param id
-   * @param accessPointId
-   * @return
-   */
-  def getLinkJson(id: String, accessPointId: String) = getLink(id, accessPointId)
 
   def manageAccessPoints(id: String, descriptionId: String) = getAction(id) {
       item => annotations => links => implicit userOpt => implicit request =>

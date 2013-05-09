@@ -111,6 +111,9 @@ pagination.displayingItems={2,choice,0#No items found|1#One item found|1<Display
 # What we say when a logical item has no descriptions
 describedEntity.noDescriptions=This item has not been provided with a description
 describedEntity.noData=No information given
+describedEntity.additionalData=Additional Harvested Data (Click to display)
+describedEntity.additionalData.key=Key
+describedEntity.additionalData.value=Value
 
 #
 # Concepts
@@ -380,15 +383,16 @@ isdiah.name=Authorized Form Of Name
 isdiah.otherFormsOfName=Other Form(s) of Name
 isdiah.parallelFormsOfName=Parallel Form(s) of Name
 isdiah.languageCode=Language of Description
-isdiah.institutionType=Institution Type
+isdiah.scriptCode=Script of Description
+isdiah.institutionType=Type of Institution with Archival Holdings
 
 # AddressF
 isdiah.addressArea=Address Area
-isdiah.addressName=Address Name
+isdiah.addressName=Address Name/Type
 isdiah.contactPerson=Contact Person
-isdiah.streetAddress=Street Address
-isdiah.city=City
-isdiah.region=Region
+isdiah.street=Street Address
+isdiah.municipality=City
+isdiah.firstdem=Region
 isdiah.countryCode=Country Code
 isdiah.email=Email
 isdiah.telephone=Telephone
@@ -399,14 +403,14 @@ isdiah.street= Address Street
 isdiah.municipality= City
 
 # Description
-isdiah.history=History
+isdiah.history=History of the Institution with Archival Holdings
 isdiah.geoculturalContext=Geographical and Cultural Context
-isdiah.mandates=Mandates
+isdiah.mandates=Mandates/Sources of Authority
 isdiah.administrativeStructure=Administrative Structure
-isdiah.records=Records
-isdiah.buildings=Buildings
-isdiah.holdings=Holdings
-isdiah.findingAids=Finding Aids
+isdiah.records=Records Management and Collecting Policies
+isdiah.buildings=Building(s)
+isdiah.holdings=Archival and Other Holdings
+isdiah.findingAids=Finding Aids, Guides, and Publication
 
 # Access
 isdiah.accessArea=Access Area
@@ -428,8 +432,8 @@ isdiah.rulesAndConventions=Rules and Conventions
 isdiah.status=Status
 isdiah.levelOfDetail=Level of Detail
 isdiah.datesCVD=Dates of Creation and Deletion
-isdiah.languages=Languages
-isdiah.scripts=Scripts
+isdiah.languages=Languages Used
+isdiah.scripts=Scripts Used
 isdiah.sources=Sources
 isdiah.maintenanceNotes=Maintenance Notes
 
