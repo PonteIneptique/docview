@@ -43,8 +43,7 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
     FieldFacetClass(
       key="holderName",
       name=Messages("documentaryUnit.heldBy"),
-      param="holder",
-      render=s => Messages(s)
+      param="holder"
     ),
     FieldFacetClass(
       key="copyrightStatus",
@@ -217,9 +216,9 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
   }
 
   def deleteDescriptionPost(id: String, did: String) = deleteDescriptionPostAction(id, EntityType.DocumentaryUnitDescription, did) {
-      item => implicit userOpt => implicit request =>
-    Redirect(routes.DocumentaryUnits.get(item.id))
-        .flashing("success" -> Messages("confirmations.itemWasDeleted", item.id))
+      ok => implicit userOpt => implicit request =>
+    Redirect(routes.DocumentaryUnits.get(id))
+        .flashing("success" -> Messages("confirmations.itemWasDeleted", id))
   }
 
   def delete(id: String) = deleteAction(id) {
@@ -362,26 +361,6 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
     }
   }
 
-  /**
-   * Create an access point link for this object
-   * @return
-   */
-  def createLinkJson(id: String, apid: String) = createLink(id, apid)
-
-  /**
-   * Create an access point link for this object, in the process creating an access point
-   * @return
-   */
-  def createAccessPointLinkJson(id: String, desc: String) = createAccessPointLink(id, desc)
-
-  /**
-   * Get the link for a given document/access point
-   * @param id
-   * @param accessPointId
-   * @return
-   */
-  def getLinkJson(id: String, accessPointId: String) = getLink(id, accessPointId)
-
   def manageAccessPoints(id: String, descriptionId: String) = getAction(id) {
       item => annotations => links => implicit userOpt => implicit request =>
     val doc = DocumentaryUnit(item)
@@ -395,15 +374,19 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
 
   // NB: This doesn't work when placed within the function scope
   // should probably check if a bug has been reported.
-  case class LinkItem(accessPoint: AccessPointF, link: Option[LinkF], targetUrl: Option[String])
+  case class Target(id: String, `type`: EntityType.Value)
+  case class LinkItem(accessPoint: AccessPointF, link: Option[LinkF], target: Option[Target])
 
   def getAccessPointsJson(id: String) = getAction(id) {
       item => annotations => links => implicit userOpt => implicit request =>
 
     import models.json.AccessPointFormat.accessPointFormat
     import models.json.LinkFormat.linkFormat
+    import models.json.entityTypeFormat
 
+    implicit val targetWrites = Json.format[Target]
     implicit val itemWrites = Json.format[LinkItem]
+
     val doc = DocumentaryUnit(item)
     val list = doc.descriptions.map { desc =>
       val accessPointTypes = AccessPointF.AccessPointType.values.toList.map { apt =>
@@ -412,7 +395,7 @@ object DocumentaryUnits extends CreationContext[DocumentaryUnitF, DocumentaryUni
           new LinkItem(
             ap.formable,
             link.flatMap(_.formableOpt),
-            link.flatMap(l => l.opposingTarget(doc).map(t => views.Helpers.urlForEntity(t.e).url))
+            link.flatMap(l => l.opposingTarget(doc).map(t => new Target(t.id, t.isA)))
           )
         }
         Map("type" -> Json.toJson(apt.toString), "data" -> Json.toJson(apTypes))

@@ -28,18 +28,8 @@ object AccessPointLink {
   // handlers for creating/listing/deleting links via JSON
   implicit val linkTypeFormat = defines.EnumUtils.enumFormat(LinkF.LinkType)
   implicit val accessPointTypeFormat = defines.EnumUtils.enumFormat(AccessPointF.AccessPointType)
+  implicit val accessPointFormat = Json.format[AccessPointF]
   implicit val accessPointLinkReads = Json.format[AccessPointLink]
-}
-
-case class NewAccessPointLink(
-  name: String,
-  `type`: AccessPointF.AccessPointType.Value,
-  data: AccessPointLink
-)
-
-object NewAccessPointLink {
-  import AccessPointLink._
-  implicit val newAccessPointLinkFormat = Json.format[NewAccessPointLink]
 }
 
 
@@ -135,6 +125,7 @@ trait EntityLink[T <: LinkableEntity] extends EntityRead[T] {
       val multiForm: Form[List[(String,LinkF,Option[String])]] = models.forms.LinkForm.multiForm
       multiForm.bindFromRequest.fold(
         errorForm => { // oh dear, we have an error...
+          println(errorForm)
           val res: Option[Result] = for {
             target <- LinkableEntity.fromEntity(item)
           } yield {
@@ -185,26 +176,49 @@ trait EntityLink[T <: LinkableEntity] extends EntityRead[T] {
   }
 
   /**
-   * Create a link, via Json, for any arbitrary two objects, via an access point.
+   * Create a link, via Json, for the object with the given id and a set of
+   * other objects.
    * @return
    */
-  def createAccessPointLink(id: String, descriptionId: String) = Action(parse.json) { request =>
-    request.body.validate[NewAccessPointLink].fold(
+  def createMultipleLinks(id: String) = Action(parse.json) { request =>
+    request.body.validate[List[AccessPointLink]].fold(
       errors => { // oh dear, we have an error...
         BadRequest(JsError.toFlatJson(errors))
       },
-      ann => {
+      anns => {
         withItemPermission(id, PermissionType.Annotate, contentType) { item => implicit userOpt => implicit request =>
           AsyncRest {
-            val link = new LinkF(id = None, ann.data.`type`.getOrElse(LinkF.LinkType.Associative), description=ann.data.description)
-            rest.LinkDAO(userOpt).accessPointLink(id, ann.data.target, descriptionId, ann.name, ann.`type`, link).map { annOrErr =>
-              annOrErr.right.map { ann =>
+            val links = anns.map(ann =>
+              (ann.target, new LinkF(id = None, linkType=ann.`type`.getOrElse(LinkF.LinkType.Associative), description=ann.description), None)
+            )
+            rest.LinkDAO(userOpt).linkMultiple(id, links).map { linksOrErr =>
+              linksOrErr.right.map { newlinks =>
                 import models.json.LinkFormat.linkFormat
-                import models.json.AccessPointFormat.accessPointFormat
-                Created(Json.obj(
-                  "accessPoint" -> Json.toJson(ann.bodies.headOption.flatMap(_.formableOpt)),
-                  "link" -> link
-                ))
+                Created(Json.toJson(newlinks.map(_.formable)))
+              }
+            }
+          }
+        }(request.map(js => AnyContentAsEmpty))
+      }
+    )
+  }
+
+  /**
+   * Create a link, via Json, for any arbitrary two objects, via an access point.
+   * @return
+   */
+  def createAccessPoint(id: String, did: String) = Action(parse.json) { request =>
+    request.body.validate[AccessPointF](AccessPointLink.accessPointFormat).fold(
+      errors => { // oh dear, we have an error...
+        BadRequest(JsError.toFlatJson(errors))
+      },
+      ap => {
+        withItemPermission(id, PermissionType.Update, contentType) { item => implicit userOpt => implicit request =>
+          AsyncRest {
+            rest.DescriptionDAO(userOpt).createAccessPoint(id, did, ap).map { apOrErr =>
+              apOrErr.right.map { ann =>
+                import models.json.AccessPointFormat._
+                Created(Json.toJson(AccessPoint(ann).formable)(AccessPointLink.accessPointFormat))
               }
             }
           }
@@ -236,6 +250,21 @@ trait EntityLink[T <: LinkableEntity] extends EntityRead[T] {
             )
           }
           Ok(Json.toJson(res))
+        }
+      }
+    }
+  }
+
+  /**
+   * Delete an access point by ID. FIXME: This should probably be moved elsewhere.
+   * @param id
+   * @return
+   */
+  def deleteAccessPoint(id: String, accessPointId: String) = withItemPermission(id, PermissionType.Update, contentType) { bool => implicit userOpt => implicit request =>
+    AsyncRest {
+      LinkDAO(userOpt).deleteAccessPoint(accessPointId).map { boolOrErr =>
+        boolOrErr.right.map { ok =>
+          Ok(Json.toJson(ok))
         }
       }
     }

@@ -3,16 +3,13 @@ package controllers
 import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits._
 
-import base.{EntitySearch, ControllerHelpers, AuthController}
-import play.api.data.{FormError, Form}
-import play.api.data.Forms._
-import defines.{EntityType, PermissionType, ContentType}
+import base.EntitySearch
+import defines.{EntityType}
 import play.Play.application
 import rest.{RestPageParams, EntityDAO}
 import play.api.libs.iteratee.{Concurrent, Enumerator}
-import models.{Isaar,Isdiah,IsadG,Entity}
+import models.{IsadG,Entity}
 import play.api.Logger
-import play.api.libs.Comet
 import concurrent.Future
 import solr.SolrIndexer.{SolrErrorResponse, SolrResponse, SolrUpdateResponse}
 import solr.SolrIndexer
@@ -74,13 +71,13 @@ object Search extends EntitySearch {
    * @param entityType
    * @return
    */
-  def filterType(entityType: String) = filterAction(EntityType.withName(entityType)) {
+  def filterType(entityType: Option[String]) = filterAction(entityType.map(EntityType.withName(_))) {
       page => implicit userOpt => implicit request =>
     Ok(Json.obj(
       "numPages" -> page.numPages,
       "page" -> page.page,
-      "items" -> page.items.map { case (id, name) =>
-        Json.arr(id, name)
+      "items" -> page.items.map { case (id, name, t) =>
+        Json.arr(id, name, t.toString)
       }
     ))
   }
