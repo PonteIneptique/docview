@@ -1,4 +1,4 @@
-var Repo = portal.controller('RepoCtrl', ['$scope', 'ui', '$service', '$http', '$routeParams', '$rootScope', 'Item', function($scope, $ui, $service, $http, $routeParams, $rootScope, $item) {
+var Repo = portal.controller('RepoCtrl', ['$scope', 'ui', '$service', '$http', '$routeParams', '$rootScope', 'Item', 'Map', function($scope, $ui, $service, $http, $routeParams, $rootScope, $item, $map) {
 /*
 	Object model :
 	item {
@@ -9,7 +9,7 @@ var Repo = portal.controller('RepoCtrl', ['$scope', 'ui', '$service', '$http', '
 	}
 	ui.blocks { } //Block for UI
 */
-	console.log($item);
+	//console.log($item);
 	$scope.item = { 
 		raw : $item.data, // Raw Datas
 		id : $item.data.id, // Description
@@ -54,7 +54,7 @@ var Repo = portal.controller('RepoCtrl', ['$scope', 'ui', '$service', '$http', '
 						$scope.ui.blocks.list[id].closed = !$scope.ui.blocks.list[id].closed;
 						$rootScope.$broadcast('ui.blocks.functions.toggleClose.'+id);
 					} else {
-						console.log("toggleHide all");
+						//console.log("toggleHide all");
 						angular.forEach($scope.ui.blocks.list, function(value, key){
 							$scope.ui.blocks.list[key].closed = true;
 							$rootScope.$broadcast('ui.blocks.functions.toggleClose.'+key);
@@ -67,14 +67,16 @@ var Repo = portal.controller('RepoCtrl', ['$scope', 'ui', '$service', '$http', '
 	};
 	
 	//Getting data for children
-	$scope.item.children.get();
+	//$scope.item.children.get();
 	//console.log($scope.item.geoloc);
 	$ui.title("Repository | "+$scope.item.desc.name);
+	
+	$ui.bookmark.create("test", ['test', 'data']);
 }]);
 
 Repo.resolveRepo = {
 	itemData: function($route, Item) {
-		console.log($route.current.params.itemID);
+		//console.log($route.current.params.itemID);
 		var result = Item.query("repository", $route.current.params.itemID);
 		return result;
 	},

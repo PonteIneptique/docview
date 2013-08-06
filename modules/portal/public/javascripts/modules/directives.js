@@ -224,7 +224,8 @@ portal.directive('whenScrolled', function ($window) {
         restrict: 'E',
         replace: true,
         template: '<div></div>',
-        link: function(scope, element, attrs) {
+		scope: { lat:"=", lon:'='},
+        link: function(scope, element, attrs) {		
 			$rootScope.map = {
 				functions : {
 					create : function() {	//Create the map element
@@ -232,6 +233,7 @@ portal.directive('whenScrolled', function ($window) {
 							center: [$rootScope.map.options.lat, $rootScope.map.options.lon],
 							zoom: $rootScope.map.options.zoom
 						});
+						
 						$rootScope.map.ui.whenReady(function() {	
 							L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', { maxZoom: 18 }).addTo($rootScope.map.ui);
 							
@@ -239,9 +241,11 @@ portal.directive('whenScrolled', function ($window) {
 							$rootScope.$broadcast('ui.map.ready');
 							
 							//Debug
-							$rootScope.map.ui.on('movestart', function(e) {
-								console.log(e);
-							});
+							/*
+								$rootScope.map.ui.on('movestart', function(e) {
+									console.log(e);
+								});
+							*/
 						});
 						
 						//Debug functions
@@ -250,19 +254,18 @@ portal.directive('whenScrolled', function ($window) {
 						// ??? if(mapOptions.points) { mapFunctions.updatePoints(mapOptions.points); }
 					},
 					init : function() {
-						if(scope.geoloc) {
-							$rootScope.map.options.lat = scope.geoloc.lat;
-							$rootScope.map.options.lon = scope.geoloc.lon;
-							$rootScope.map.options.zoom = 6;
-							$rootScope.map.options.points = [{lat: lat, lng: lon}];
-						}
-						else {
+						if(scope.lat && scope.lon) {
+							//console.log("Center from attrs");
+							$rootScope.map.options.lat = parseFloat(scope.lat);
+							$rootScope.map.options.lon = parseFloat(scope.lon);
+							$rootScope.map.options.zoom = 5;
+							
+						} else {
 							//Default values
 							$rootScope.map.options.lat = 49.32512199104001;
 							$rootScope.map.options.lon = 10.1513671875;
 							$rootScope.map.options.zoom = 5;
 						}
-						
 						this.create();
 						
 					},

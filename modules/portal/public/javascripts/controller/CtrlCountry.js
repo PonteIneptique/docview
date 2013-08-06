@@ -10,6 +10,7 @@ var Country = portal.controller('CountryCtrl', ['$scope','ui',  'Item', '$http',
 	}).error(function (data) {
 		console.log("Error loading children json datas from country");
 	});
+	
 	$ui.title("Country | "+$scope.item.identifier);
 }]);
 

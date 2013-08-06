@@ -11,7 +11,12 @@
 		</div>
 		<div class="span4">
 			<ul class="unstyled">
-			
+				<li class="ui-button">
+					<form ng-submit="ui.bookmark.save(bookmarkName)">
+						<input type="text" ng-model="bookmarkName" placeholder="Bookmark name" />
+						<div class="abs"><i class="icon-bookmark"></i> Save</div>
+					</form>
+				</li>
 				<li class="ui-block">
 						<h2 class="nomargin">Available blocks<div class="pull-right"><a class="filterBar-icon" ng-click="ui.blocks.functions.toggleClose()"><i class="icon-minus"></i></a><a class="filterBar-icon" ng-click="ui.blocks.functions.toggleHide()"><i class="icon-remove"></i></a></div></h2>
 						<ul class="list-item">

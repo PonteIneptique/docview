@@ -127,6 +127,25 @@ var Doc = portal.controller('DocCtrl', ['$scope', 'ui', '$filter', '$location', 
 				}
 				return available[this.amount - 1];
 			}
+		},
+		bookmark : {
+			save : function (name) { 
+				//var cookie = $ui.bookmark.read("bookmark");
+				if($ui.bookmark.read("bookmark")) {
+					var cookie = $ui.bookmark.read("bookmark");
+					//console.log("Previous cookie spotted" + cookie);
+				} else {
+					var cookie = [];
+				}
+				
+				var bookmark = ["bookmark", name, $location.url()]; // 0: Type, 1 : name , 2 : URL
+				
+				cookie.push(bookmark);
+				//console.log(cookie);
+				$ui.bookmark.create("bookmark", cookie);
+				//console.log("Hello bookmark " +name);
+				//console.log($ui.bookmark.read("bookmark"));
+			}
 		}
 	};
 	

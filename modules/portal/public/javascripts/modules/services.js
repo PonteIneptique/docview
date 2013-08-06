@@ -1,15 +1,49 @@
 portal.factory("ui", function($window) {
 	var ui = {
 		title : function(title) { $window.document.title = "EHRI Portal | " + title; },
-		bookmark : function() {
-			//http://stackoverflow.com/questions/3024745/cross-browser-bookmark-add-to-favorites-javascript
-			if (window.sidebar) { // Mozilla Firefox Bookmark
-				window.sidebar.addPanel(location.href,document.title,"");
-			} else if(window.external) { // IE Favorite
-				window.external.AddFavorite(location.href,document.title); }
-			else if(window.opera && window.print) { // Opera Hotlist
-				this.title=document.title;
-				return true;
+		bookmark : {
+			//Inspired by http://www.quirksmode.org/js/cookies.html
+			create : function(name,value, days) {
+			
+				//console.log("Array");
+				if(!days) { var days = 365; }
+				var date = new Date();
+				date.setTime(date.getTime()+(days*24*60*60*1000));
+				var expires = "; expires="+date.toGMTString();
+				
+				if(value[0].length > 1)	{
+					console.log(value);
+					angular.forEach(value, function(v,k) {
+						//console.log(v);
+						value[k] = v.join(",");
+					});
+					value = value.join("|");
+					console.log("Cookie array spotted");
+				}
+				
+				document.cookie = name+"="+value+expires+"; path=/";
+				//console.log(value);
+			},
+			read : function(name) {
+				var nameEQ = name + "=";
+				var ca = document.cookie.split(';');
+				for(var i=0;i < ca.length;i++) {
+					var c = ca[i];
+					while (c.charAt(0)==' ') c = c.substring(1,c.length);
+					if (c.indexOf(nameEQ) == 0) return this.format(c.substring(nameEQ.length,c.length));
+				}
+				return null;
+			},
+			format: function(str) {
+				var array = str.split("|");
+				angular.forEach(array, function(v,k) {
+					//console.log(k);
+					array[k] = v.split(",");
+				});
+				return array;
+			},
+			erase : function(name) {
+				this.create(name,"",-1);
 			}
 		}
 	};
@@ -116,7 +150,7 @@ portal.factory("ui", function($window) {
 							if(data[0])
 							{
 								Item.geoloc = data[0];
-								console.log("We push geolog" + data[0]);
+								//console.log("We push geolog " + data[0]);
 							}
 						});
 					}
@@ -187,7 +221,7 @@ portal.factory("ui", function($window) {
 		},
 		marker : {
 			center : function(data) {	//Center map on {lat: data.lat, lng: data.lon} through broadcast
-				$rootScope.mapCenter = {lat: data.lat, lng: data.lng};
+				$rootScope.map.options = {lat: data.lat, lng: data.lng, zoom:data.zoom, on:true};
 				Map.broadcast.center();
 			},
 			add : function (data, title, id) {
