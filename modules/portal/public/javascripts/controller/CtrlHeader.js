@@ -1,6 +1,13 @@
-var header = portal.controller('headerCtrl', ['$scope', '$location', 'myBasketService', function($scope, $location, $basket) {
+var header = portal.controller('headerCtrl', ['$scope', '$location', 'myBasketService', 'ui', function($scope, $location, $basket, $ui) {
 
 	$scope.ui = {
+		bookmark : {
+			object : { },
+			get : function() {
+				this.object = $ui.bookmark.object("bookmark");
+				console.log(this.object);
+			}
+		},
 		basket : {
 			size: {
 				get: function() {
@@ -65,5 +72,10 @@ var header = portal.controller('headerCtrl', ['$scope', '$location', 'myBasketSe
         $scope.ui.basket.raw[$basket.content.transit.id] = $basket.content.transit.id;	// Dont need more data than id
 		$scope.ui.basket.size.get();
     });
+	
+    $scope.$on('ui.bookmark.update', function() {
+		$scope.ui.bookmark.get();
+	});
+		$scope.ui.bookmark.get();
 	
 }]);

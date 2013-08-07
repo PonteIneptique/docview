@@ -44,6 +44,20 @@ portal.factory("ui", function($window) {
 			},
 			erase : function(name) {
 				this.create(name,"",-1);
+			},
+			object : function (name) {
+				var array = this.read(name);
+				console.log(array);
+				var object = {
+					data : {},
+					children : 0,
+				};
+				angular.forEach(array, function(value) {
+					console.log(value);
+					object.data[value[1]] = {value : value[2]}
+					object.children = object.children + 1;
+				});
+				return object;
 			}
 		}
 	};

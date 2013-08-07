@@ -13,6 +13,12 @@
 					<span class="badge badge-warning" ng-show="(ui.basket.size.val > 0)">{{ui.basket.size.val}}</span>
 				</a>
 			</li>
+			<li ng-show="ui.bookmark.object.children > 0">
+				<a class="azarin" href="#/basket">
+					<i class="icon-shopping-cart"></i>	Saves
+					<span class="badge badge-warning">{{ui.bookmark.object.children}}</span>
+				</a>
+			</li>
 		</ul>
 		<div class="pull-right flat-form ">
 			<form ng-submit="ui.search.submit()" class="quick-search"><input class="input" type="text" ng-model="searchTerm" placeholder="Quick search" ng-class="(topFormShow && 'open')"/><a class="icon" ng-click="topFormShow = !topFormShow;">
