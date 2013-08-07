@@ -28,5 +28,6 @@ var Ba = portal.controller('BasketCtrl', ['$scope', 'portal', '$filter', 'myBask
 	//<-- Load data 
 	if($scope.basket.raw.length > 0) { $scope.basket.load(1); }	// We load if had data in raw
 	else { $scope.ui.general.loading = false; }	//Stop loading icon if not
+	$ui.title("Basket");
 	// Load data-->
 }]);

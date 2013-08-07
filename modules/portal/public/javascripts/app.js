@@ -20,5 +20,6 @@ portal.
 		when('/item/historicalAgent/:itemID', {templateUrl: ANGULAR_ROOT + '/view/controller-view/historicalAgent.html', controller:"AgentCtrl", resolve: Agent.resolveAgent, reloadOnSearch: false}).
 		when('/search', {templateUrl: ANGULAR_ROOT + '/view/controller-view/search.html', controller:"SearchCtrl", reloadOnSearch: false}).
 		when('/', {templateUrl: ANGULAR_ROOT + '/view/controller-view/search.html', controller:"SearchCtrl", reloadOnSearch: false}).
+		when('/saved/', {templateUrl: ANGULAR_ROOT + '/view/controller-view/save.html', controller:"SaveCtrl", reloadOnSearch: false}).
 		otherwise({redirectTo: '/'});
 }]);

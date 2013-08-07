@@ -1,0 +1,17 @@
+<div class="search-bar">
+<h1>Saved item</h1>
+</div>
+<article class="container document" style="padding-top:30px;">
+	
+	<div class="row">
+		<div class="span8">
+			<ul class="unstyled">
+				<li ng-repeat="bookmark in ui.bookmark.object.data">
+					<a href="{{bookmark.href}}">{{bookmark.name}}</a>
+				</li>
+			</ul>
+		</div>
+		<div class="span4">
+		</div>
+	</div>
+</article>

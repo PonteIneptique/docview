@@ -73,9 +73,10 @@ var header = portal.controller('headerCtrl', ['$scope', '$location', 'myBasketSe
 		$scope.ui.basket.size.get();
     });
 	
-    $scope.$on('ui.bookmark.update', function() {
+    $scope.$on('ui.bookmark.update.bookmark', function() {
+		console.log("Change bookmark");
 		$scope.ui.bookmark.get();
 	});
-		$scope.ui.bookmark.get();
+	$scope.ui.bookmark.get();
 	
 }]);

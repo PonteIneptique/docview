@@ -1,4 +1,4 @@
-portal.factory("ui", function($window) {
+portal.factory("ui", function($window, $rootScope) {
 	var ui = {
 		title : function(title) { $window.document.title = "EHRI Portal | " + title; },
 		bookmark : {
@@ -22,6 +22,10 @@ portal.factory("ui", function($window) {
 				}
 				
 				document.cookie = name+"="+value+expires+"; path=/";
+				
+				$rootScope.$broadcast('ui.bookmark.update.'+name);
+				
+				
 				//console.log(value);
 			},
 			read : function(name) {
@@ -54,7 +58,7 @@ portal.factory("ui", function($window) {
 				};
 				angular.forEach(array, function(value) {
 					console.log(value);
-					object.data[value[1]] = {value : value[2]}
+					object.data[value[1]] = {href : value[2], name : value[1], type: value[0]}
 					object.children = object.children + 1;
 				});
 				return object;
