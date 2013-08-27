@@ -67,6 +67,7 @@ portal.factory("ui", function($window, $rootScope) {
 	};
 	return ui;
 }).factory("portal", function() {
+	//controllers.portal.routes.Portal.jsRoutes
 	var portal = {
 		item : {
 			documentaryUnit : {
@@ -90,7 +91,7 @@ portal.factory("ui", function($window, $rootScope) {
 				search : function() { return jsRoutes.controllers.authorities.HistoricalAgents.search().url; }
 			},
 			all : {
-				search : function() { console.log(jsRoutes.controllers.portal.Application.search().url); return jsRoutes.controllers.portal.Application.search().url;}
+				search : function() { console.log(jsRoutes.controllers.portal.Portal.search().url); return jsRoutes.controllers.portal.Portal.search().url;}
 			}
 		}
 	}
