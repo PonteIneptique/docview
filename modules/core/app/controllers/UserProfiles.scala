@@ -1,6 +1,5 @@
 package controllers.core
 
-import _root_.controllers.ListParams
 import forms.VisibilityForm
 import controllers.base._
 import models._
@@ -13,19 +12,6 @@ import utils.search.SearchParams
 import utils.search.Dispatcher
 import com.google.inject._
 
-object UserProfiles {
-  val listFilterMappings: ListMap[String,String] = ListMap(
-    "name" -> "name",
-    Entity.IDENTIFIER -> Entity.IDENTIFIER
-  )
-
-  val orderMappings: ListMap[String,String] = ListMap(
-    "name" -> "name",
-    Entity.IDENTIFIER -> Entity.IDENTIFIER
-  )
-}
-
-
 @Singleton
 class UserProfiles @Inject()(implicit val globalConfig: global.GlobalConfig) extends PermissionHolderController[UserProfile]
   with EntityRead[UserProfile]
@@ -35,12 +21,8 @@ class UserProfiles @Inject()(implicit val globalConfig: global.GlobalConfig) ext
 
   val DEFAULT_SORT = "name"
 
-  override def processParams(params: ListParams): rest.RestPageParams = {
-    params.toRestParams(UserProfiles.listFilterMappings, UserProfiles.orderMappings, Some(DEFAULT_SORT))
-  }
-
   val entityType = EntityType.UserProfile
-  val contentType = ContentType.UserProfile
+  val contentType = ContentTypes.UserProfile
 
   // Search params
   val DEFAULT_SEARCH_PARAMS = SearchParams(entities = List(entityType))
@@ -62,8 +44,8 @@ class UserProfiles @Inject()(implicit val globalConfig: global.GlobalConfig) ext
     }
   }
 
-  def history(id: String) = historyAction(id) { item => page => implicit userOptOpt => implicit request =>
-    Ok(views.html.systemEvents.itemList(item, page, ListParams()))
+  def history(id: String) = historyAction(id) { item => page => params => implicit userOptOpt => implicit request =>
+    Ok(views.html.systemEvents.itemList(item, page, params))
   }
 
   def list = listAction { page => params => implicit userOptOpt => implicit request =>
@@ -99,12 +81,12 @@ class UserProfiles @Inject()(implicit val globalConfig: global.GlobalConfig) ext
         .flashing("success" -> Messages("confirmations.itemWasDeleted", id))
   }
 
-  def grantList(id: String, page: Int = 1, limit: Int = DEFAULT_LIMIT) = grantListAction(id, page, limit) {
+  def grantList(id: String) = grantListAction(id) {
       item => perms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.permissionGrantList(item, perms))
   }
 
-  def permissions(id: String, page: Int = 1, limit: Int = DEFAULT_LIMIT) = setGlobalPermissionsAction(id) {
+  def permissions(id: String) = setGlobalPermissionsAction(id) {
       item => perms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.editGlobalPermissions(item, perms,
         controllers.core.routes.UserProfiles.permissionsPost(id)))

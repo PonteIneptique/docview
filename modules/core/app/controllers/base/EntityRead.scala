@@ -1,15 +1,13 @@
 package controllers.base
 
 import play.api.libs.concurrent.Execution.Implicits._
-import models.base.{Model, MetaModel}
 import play.api.mvc._
 import models._
-import rest.{Page, RestPageParams}
-import controllers.ListParams
+import rest.{Page}
 import models.json.{RestReadable, ClientConvertable}
-import play.api.libs.json.{Format, Json}
-import play.api.Logger
-import play.api.http.MimeTypes
+import play.api.libs.json.Json
+import utils.ListParams
+import utils.ListParams
 
 
 /**
@@ -21,8 +19,8 @@ import play.api.http.MimeTypes
 trait EntityRead[MT] extends EntityController {
   val DEFAULT_LIMIT = 20
 
-  val defaultPage: RestPageParams = new RestPageParams()
-  val defaultChildPage: RestPageParams = new RestPageParams()
+  val defaultPage: ListParams = new ListParams()
+  val defaultChildPage: ListParams = new ListParams()
 
 
   def getEntity(id: String, user: Option[UserProfile])(f: MT => Result)(
@@ -88,10 +86,10 @@ trait EntityRead[MT] extends EntityController {
           case _ => {
             AsyncRest {
               // NB: Effectively disable paging here by using a high limit
-              val params = ListParams.bind(request)
+              val params = ListParams.fromRequest(request)
               val annsReq = rest.AnnotationDAO(userOpt).getFor(id)
               val linkReq = rest.LinkDAO(userOpt).getFor(id)
-              val cReq = rest.EntityDAO[MT](entityType, userOpt).pageChildren[CT](id, processChildParams(params))
+              val cReq = rest.EntityDAO[MT](entityType, userOpt).pageChildren[CT](id, params)
               for { annOrErr <- annsReq ; cOrErr <- cReq ; linkOrErr <- linkReq } yield {
                 for { anns <- annOrErr.right ; children <- cOrErr.right ; links <- linkOrErr.right } yield {
                   f(item)(children)(params)(anns)(links)(userOpt)(request)
@@ -109,8 +107,8 @@ trait EntityRead[MT] extends EntityController {
     userProfileAction { implicit userOpt => implicit request =>
       Secured {
         AsyncRest {
-          val params = ListParams.bind(request)
-          rest.EntityDAO[MT](entityType, userOpt).page(processParams(params)).map { itemOrErr =>
+          val params = ListParams.fromRequest(request)
+          rest.EntityDAO[MT](entityType, userOpt).page(params).map { itemOrErr =>
             itemOrErr.right.map {
               page => render {
                 case Accepts.Json() => Ok(Json.toJson(page)(Page.pageWrites(cfmt.clientFormat)))
@@ -125,38 +123,20 @@ trait EntityRead[MT] extends EntityController {
 
 
   def historyAction(id: String)(
-      f: MT => rest.Page[SystemEvent] => Option[UserProfile] => Request[AnyContent] => Result)(implicit rd: RestReadable[MT]) = {
+      f: MT => rest.Page[SystemEvent] => ListParams => Option[UserProfile] => Request[AnyContent] => Result)(implicit rd: RestReadable[MT]) = {
     userProfileAction { implicit userOpt => implicit request =>
       Secured {
         AsyncRest {
+          val params = ListParams.fromRequest(request)
           val itemReq = rest.EntityDAO[MT](entityType, userOpt).get(id)(rd)
-          val alReq = rest.SystemEventDAO(userOpt).history(id, RestPageParams())
+          val alReq = rest.SystemEventDAO(userOpt).history(id, params)
           for { itemOrErr <- itemReq ; alOrErr <- alReq  } yield {
             for { item <- itemOrErr.right ; al <- alOrErr.right  } yield {
-              f(item)(al)(userOpt)(request)
+              f(item)(al)(params)(userOpt)(request)
             }
           }
         }
       }
     }
   }
-
-  /**
-   * Process parameters for the main list form.
-   * @param listParams
-   * @return
-   */
-  def processParams(listParams: ListParams): RestPageParams = {
-    // don't do anything by default except for copy the page and limit
-    // Inheriting controllers can override this to handle translating
-    // filter values to the internal REST format.
-    RestPageParams(listParams.page, listParams.limit)
-  }
-
-  /**
-   * Process parameters for the child form.
-   * @param listParams
-   * @return
-   */
-  def processChildParams(listParams: ListParams): RestPageParams = processParams(listParams)
 }

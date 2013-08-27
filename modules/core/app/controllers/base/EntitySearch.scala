@@ -9,6 +9,7 @@ import play.api.Play._
 import models.json.{ClientConvertable, RestReadable}
 import play.api.libs.json.Json
 import utils.search._
+import play.api.Logger
 
 
 /**
@@ -19,12 +20,6 @@ trait EntitySearch extends Controller with AuthController with ControllerHelpers
 
   val globalConfig: GlobalConfig
   implicit lazy val searchDispatcher: utils.search.Dispatcher = globalConfig.searchDispatcher
-
-  /**
-   * Inheriting controllers should override a list of facets that
-   * are available for the given entity type.
-   */
-  val entityFacets: FacetClassList = Nil
 
   def bindFacetsFromRequest(facetClasses: List[FacetClass[Facet]])(implicit request: Request[AnyContent]): List[AppliedFacet] = {
     val qs = request.queryString
@@ -66,36 +61,39 @@ trait EntitySearch extends Controller with AuthController with ControllerHelpers
    * @param f
    * @return
    */
-  def searchAction[MT](filters: Map[String,Any] = Map.empty, defaultParams: Option[SearchParams] = None)(
+  def searchAction[MT](filters: Map[String,Any] = Map.empty, defaultParams: Option[SearchParams] = None,
+                        entityFacets: FacetClassList = Nil)(
       f: ItemPage[(MT, String)] => SearchParams => List[AppliedFacet] => Option[UserProfile] => Request[AnyContent] => Result)(implicit rd: RestReadable[MT], cfmt: ClientConvertable[MT]): Action[AnyContent] = {
     userProfileAction { implicit userOpt => implicit request =>
-      Secured {
+      val params = defaultParams.map( p => p.copy(sort = defaultSortFunction(p, request)))
 
-        val params = defaultParams.map( p => p.copy(sort = defaultSortFunction(p, request)))
+      // Override the entity type with the controller entity type
+      val sp = SearchParams.form.bindFromRequest
+          .value.getOrElse(SearchParams())
+          .setDefault(params)
 
-        // Override the entity type with the controller entity type
-        val sp = SearchParams.form.bindFromRequest
-            .value.getOrElse(SearchParams())
-            .setDefault(params)
-
-        val facets: List[AppliedFacet] = bindFacetsFromRequest(entityFacets)
-        AsyncRest {
-          searchDispatcher.search(sp, facets, entityFacets, filters).map { resOrErr =>
-            resOrErr.right.map { res =>
-              val ids = res.items.map(_.id)
-              val itemIds = res.items.map(_.itemId)
-              AsyncRest {
-                rest.SearchDAO(userOpt).list[MT](itemIds).map { listOrErr =>
-                  listOrErr.right.map { list =>
-                    val page = res.copy(items = list.zip(ids))
-                    render {
-                      case Accepts.Json() => Ok(Json.obj(
-                        "page" -> Json.toJson(res.copy(items = list))(ItemPage.itemPageWrites),
-                        "params" -> Json.toJson(sp)(SearchParams.Converter.clientFormat),
-                        "appliedFacets" -> Json.toJson(facets)
-                      ))
-                      case _ => f(page)(sp)(facets)(userOpt)(request)
-                    }
+      val facets: List[AppliedFacet] = bindFacetsFromRequest(entityFacets)
+      AsyncRest {
+        searchDispatcher.search(sp, facets, entityFacets, filters).map { resOrErr =>
+          resOrErr.right.map { res =>
+            val ids = res.items.map(_.id)
+            val itemIds = res.items.map(_.itemId)
+            AsyncRest {
+              rest.SearchDAO(userOpt).list[MT](itemIds).map { listOrErr =>
+                listOrErr.right.map { list =>
+                  // Sanity check!
+                  if (list.size != ids.size) {
+                    Logger.logger.warn("Items returned by search were not found in database: {} -> {}",
+                      (ids, list))
+                  }
+                  val page = res.copy(items = list.zip(ids))
+                  render {
+                    case Accepts.Json() | Accepts.JavaScript() => Ok(Json.obj(
+                      "page" -> Json.toJson(res.copy(items = list))(ItemPage.itemPageWrites),
+                      "params" -> Json.toJson(sp)(SearchParams.Converter.clientFormat),
+                      "appliedFacets" -> Json.toJson(facets)
+                    )).as(play.api.http.ContentTypes.JSON)
+                    case _ => f(page)(sp)(facets)(userOpt)(request)
                   }
                 }
               }

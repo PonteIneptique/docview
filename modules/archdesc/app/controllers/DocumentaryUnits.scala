@@ -1,6 +1,5 @@
 package controllers.archdesc
 
-import _root_.controllers.ListParams
 import forms.VisibilityForm
 import models._
 import controllers.base._
@@ -10,12 +9,10 @@ import play.api._
 import play.api.mvc._
 import play.api.i18n.Messages
 import defines._
-import collection.immutable.ListMap
 import views.Helpers
-import play.api.libs.json.Json
 import utils.search.{SearchParams, FacetSort}
-import controllers.archdesc.{routes => archdescRoutes}
 import com.google.inject._
+import solr.SolrConstants
 
 
 @Singleton
@@ -34,7 +31,8 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
 
   // Documentary unit facets
   import solr.facet._
-  override val entityFacets = List(
+
+  private val entityFacets = List(
     FieldFacetClass(
       key=IsadG.LANG_CODE,
       name=Messages(IsadG.FIELD_PREFIX + "." + IsadG.LANG_CODE),
@@ -62,10 +60,10 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   )
 
 
-  val targetContentTypes = Seq(ContentType.DocumentaryUnit)
+  val targetContentTypes = Seq(ContentTypes.DocumentaryUnit)
 
   val entityType = EntityType.DocumentaryUnit
-  val contentType = ContentType.DocumentaryUnit
+  val contentType = ContentTypes.DocumentaryUnit
 
   val form = models.forms.DocumentaryUnitForm.form
   val childForm = models.forms.DocumentaryUnitForm.form
@@ -73,23 +71,26 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
 
   val DEFAULT_SEARCH_PARAMS = SearchParams(entities=List(entityType))
 
+  private val docRoutes = controllers.archdesc.routes.DocumentaryUnits
+
 
   def search = {
     // What filters we gonna use? How about, only list stuff here that
     // has no parent items...
-    val filters = Map("depthOfDescription" -> 0)
-    searchAction[DocumentaryUnit](filters, defaultParams = Some(DEFAULT_SEARCH_PARAMS)) {
-      page => params => facets => implicit userOpt => implicit request =>
-        Ok(views.html.documentaryUnit.search(page, params, facets, archdescRoutes.DocumentaryUnits.search))
+    val filters = Map(SolrConstants.TOP_LEVEL -> true)
+    searchAction[DocumentaryUnit](filters, defaultParams = Some(DEFAULT_SEARCH_PARAMS),
+        entityFacets = entityFacets) {
+        page => params => facets => implicit userOpt => implicit request =>
+      Ok(views.html.documentaryUnit.search(page, params, facets, docRoutes.search))
     }
   }
 
   def searchChildren(id: String) = itemPermissionAction[DocumentaryUnit](contentType, id) {
       item => implicit userOpt => implicit request =>
 
-    searchAction[DocumentaryUnit](Map("parentId" -> item.id)) {
+    searchAction[DocumentaryUnit](Map("parentId" -> item.id), entityFacets = entityFacets) {
       page => params => facets => implicit userOpt => implicit request =>
-        Ok(views.html.documentaryUnit.search(page, params, facets, archdescRoutes.DocumentaryUnits.search))
+        Ok(views.html.documentaryUnit.search(page, params, facets, docRoutes.search))
     }.apply(request)
   }
 
@@ -101,16 +102,17 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   }*/
 
   def get(id: String) = getAction(id) { item => annotations => links => implicit userOpt => implicit request =>
-    searchAction[DocumentaryUnit](Map("parentId" -> item.id, "depthOfDescription" -> (item.ancestors.size + 1).toString),
-          defaultParams = Some(SearchParams(entities = List(EntityType.DocumentaryUnit)))) {
+    searchAction[DocumentaryUnit](Map("parentId" -> item.id),
+          defaultParams = Some(SearchParams(entities = List(EntityType.DocumentaryUnit))),
+          entityFacets = entityFacets) {
         page => params => facets => _ => _ =>
       Ok(views.html.documentaryUnit.show(item, page, params, facets,
-          archdescRoutes.DocumentaryUnits.get(id), annotations, links))
+          docRoutes.get(id), annotations, links))
     }.apply(request)
   }
 
-  def history(id: String) = historyAction(id) { item => page => implicit userOpt => implicit request =>
-    Ok(views.html.systemEvents.itemList(item, page, ListParams()))
+  def history(id: String) = historyAction(id) { item => page => params => implicit userOpt => implicit request =>
+    Ok(views.html.systemEvents.itemList(item, page, params))
   }
 
   def list = listAction { page => params => implicit userOpt => implicit request =>
@@ -120,14 +122,14 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   def update(id: String) = updateAction(id) { item => implicit userOpt => implicit request =>
     Ok(views.html.documentaryUnit.edit(
       item, form.fill(item.model),
-      archdescRoutes.DocumentaryUnits.updatePost(id)))
+      docRoutes.updatePost(id)))
   }
 
   def updatePost(id: String) = updatePostAction(id, form) { olditem => formOrItem => implicit userOpt => implicit request =>
     formOrItem match {
       case Left(errorForm) => BadRequest(views.html.documentaryUnit.edit(
-          olditem, errorForm, archdescRoutes.DocumentaryUnits.updatePost(id)))
-      case Right(item) => Redirect(archdescRoutes.DocumentaryUnits.get(item.id))
+          olditem, errorForm, docRoutes.updatePost(id)))
+      case Right(item) => Redirect(docRoutes.get(item.id))
         .flashing("success" -> play.api.i18n.Messages("confirmations.itemWasUpdated", item.id))
     }
   }
@@ -135,7 +137,7 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   def createDoc(id: String) = childCreateAction(id, contentType) { item => users => groups => implicit userOpt => implicit request =>
     Ok(views.html.documentaryUnit.create(
       item, childForm, VisibilityForm.form, users, groups,
-      archdescRoutes.DocumentaryUnits.createDocPost(id)))
+      docRoutes.createDocPost(id)))
   }
 
   def createDocPost(id: String) = childCreatePostAction(id, childForm, contentType) {
@@ -144,9 +146,9 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
       case Left((errorForm,accForm)) => getUsersAndGroups { users => groups =>
         BadRequest(views.html.documentaryUnit.create(item,
           errorForm, accForm, users, groups,
-          archdescRoutes.DocumentaryUnits.createDocPost(id)))
+          docRoutes.createDocPost(id)))
       }
-      case Right(item) => Redirect(archdescRoutes.DocumentaryUnits.get(item.id))
+      case Right(item) => Redirect(docRoutes.get(item.id))
         .flashing("success" -> Messages("confirmations.itemWasCreated", item.id))
     }
   }
@@ -154,7 +156,7 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   def createDescription(id: String) = withItemPermission[DocumentaryUnit](id, PermissionType.Update, contentType) {
       item => implicit userOpt => implicit request =>
     Ok(views.html.documentaryUnit.editDescription(item,
-        descriptionForm, archdescRoutes.DocumentaryUnits.createDescriptionPost(id)))
+        descriptionForm, docRoutes.createDescriptionPost(id)))
   }
 
   def createDescriptionPost(id: String) = createDescriptionPostAction(id, EntityType.DocumentaryUnitDescription, descriptionForm) {
@@ -162,9 +164,9 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
     formOrItem match {
       case Left(errorForm) => {
         Ok(views.html.documentaryUnit.editDescription(item,
-          errorForm, archdescRoutes.DocumentaryUnits.createDescriptionPost(id)))
+          errorForm, docRoutes.createDescriptionPost(id)))
       }
-      case Right(updated) => Redirect(archdescRoutes.DocumentaryUnits.get(item.id))
+      case Right(updated) => Redirect(docRoutes.get(item.id))
         .flashing("success" -> Messages("confirmations.itemWasCreated", item.id))
     }
   }
@@ -174,7 +176,7 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
     val desc = item.model.description(did).getOrElse(sys.error("Description not found: " + did))
     Ok(views.html.documentaryUnit.editDescription(item,
       descriptionForm.fill(desc),
-      archdescRoutes.DocumentaryUnits.updateDescriptionPost(id, did)))
+      docRoutes.updateDescriptionPost(id, did)))
   }
 
   def updateDescriptionPost(id: String, did: String) = updateDescriptionPostAction(id, EntityType.DocumentaryUnitDescription, did, descriptionForm) {
@@ -182,9 +184,9 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
     formOrItem match {
       case Left(errorForm) => {
         Ok(views.html.documentaryUnit.editDescription(item,
-          errorForm, archdescRoutes.DocumentaryUnits.updateDescriptionPost(id, did)))
+          errorForm, docRoutes.updateDescriptionPost(id, did)))
       }
-      case Right(updated) => Redirect(archdescRoutes.DocumentaryUnits.get(item.id))
+      case Right(updated) => Redirect(docRoutes.get(item.id))
         .flashing("success" -> Messages("confirmations.itemWasCreated", item.id))
     }
   }
@@ -192,26 +194,26 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
   def deleteDescription(id: String, did: String) = deleteDescriptionAction(id, did) {
       item => description => implicit userOpt => implicit request =>
     Ok(views.html.deleteDescription(item, description,
-        archdescRoutes.DocumentaryUnits.deleteDescriptionPost(id, did),
-        archdescRoutes.DocumentaryUnits.get(id)))
+        docRoutes.deleteDescriptionPost(id, did),
+        docRoutes.get(id)))
   }
 
   def deleteDescriptionPost(id: String, did: String) = deleteDescriptionPostAction(id, EntityType.DocumentaryUnitDescription, did) {
       ok => implicit userOpt => implicit request =>
-    Redirect(archdescRoutes.DocumentaryUnits.get(id))
+    Redirect(docRoutes.get(id))
         .flashing("success" -> Messages("confirmations.itemWasDeleted", id))
   }
 
   def delete(id: String) = deleteAction(id) {
       item => implicit userOpt => implicit request =>
     Ok(views.html.delete(
-        item, archdescRoutes.DocumentaryUnits.deletePost(id),
-        archdescRoutes.DocumentaryUnits.get(id)))
+        item, docRoutes.deletePost(id),
+        docRoutes.get(id)))
   }
 
   def deletePost(id: String) = deletePostAction(id) {
       ok => implicit userOpt => implicit request =>
-    Redirect(archdescRoutes.DocumentaryUnits.search())
+    Redirect(docRoutes.search())
         .flashing("success" -> Messages("confirmations.itemWasDeleted", id))
   }
 
@@ -219,56 +221,55 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
       item => users => groups => implicit userOpt => implicit request =>
     Ok(views.html.permissions.visibility(item,
         VisibilityForm.form.fill(item.accessors.map(_.id)),
-        users, groups, archdescRoutes.DocumentaryUnits.visibilityPost(id)))
+        users, groups, docRoutes.visibilityPost(id)))
   }
 
   def visibilityPost(id: String) = visibilityPostAction(id) {
       ok => implicit userOpt => implicit request =>
-    Redirect(archdescRoutes.DocumentaryUnits.get(id))
+    Redirect(docRoutes.get(id))
         .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
   }
 
-  def managePermissions(id: String, page: Int = 1, spage: Int = 1, limit: Int = DEFAULT_LIMIT) =
-    manageScopedPermissionsAction(id, page, spage, limit) {
+  def managePermissions(id: String) = manageScopedPermissionsAction(id) {
       item => perms => sperms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.manageScopedPermissions(item, perms, sperms,
-        archdescRoutes.DocumentaryUnits.addItemPermissions(id),
-        archdescRoutes.DocumentaryUnits.addScopedPermissions(id)))
+        docRoutes.addItemPermissions(id),
+        docRoutes.addScopedPermissions(id)))
   }
 
   def addItemPermissions(id: String) = addItemPermissionsAction(id) {
       item => users => groups => implicit userOpt => implicit request =>
     Ok(views.html.permissions.permissionItem(item, users, groups,
-        archdescRoutes.DocumentaryUnits.setItemPermissions _))
+        docRoutes.setItemPermissions _))
   }
 
   def addScopedPermissions(id: String) = addItemPermissionsAction(id) {
       item => users => groups => implicit userOpt => implicit request =>
     Ok(views.html.permissions.permissionScope(item, users, groups,
-        archdescRoutes.DocumentaryUnits.setScopedPermissions _))
+        docRoutes.setScopedPermissions _))
   }
 
   def setItemPermissions(id: String, userType: String, userId: String) = setItemPermissionsAction(id, userType, userId) {
       item => accessor => perms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.setPermissionItem(item, accessor, perms, contentType,
-        archdescRoutes.DocumentaryUnits.setItemPermissionsPost(id, userType, userId)))
+        docRoutes.setItemPermissionsPost(id, userType, userId)))
   }
 
   def setItemPermissionsPost(id: String, userType: String, userId: String) = setItemPermissionsPostAction(id, userType, userId) {
       bool => implicit userOpt => implicit request =>
-    Redirect(archdescRoutes.DocumentaryUnits.managePermissions(id))
+    Redirect(docRoutes.managePermissions(id))
         .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
   }
 
   def setScopedPermissions(id: String, userType: String, userId: String) = setScopedPermissionsAction(id, userType, userId) {
       item => accessor => perms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.setPermissionScope(item, accessor, perms, targetContentTypes,
-        archdescRoutes.DocumentaryUnits.setScopedPermissionsPost(id, userType, userId)))
+        docRoutes.setScopedPermissionsPost(id, userType, userId)))
   }
 
   def setScopedPermissionsPost(id: String, userType: String, userId: String) = setScopedPermissionsPostAction(id, userType, userId) {
       perms => implicit userOpt => implicit request =>
-    Redirect(archdescRoutes.DocumentaryUnits.managePermissions(id))
+    Redirect(docRoutes.managePermissions(id))
         .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
   }
 
@@ -279,26 +280,26 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
 
   def linkAnnotateSelect(id: String, toType: String) = linkSelectAction(id, toType) {
     item => page => params => facets => etype => implicit userOpt => implicit request =>
-      Ok(views.html.linking.linkSourceList(item, page, params, facets, etype,
-          archdescRoutes.DocumentaryUnits.linkAnnotateSelect(id, toType),
-          archdescRoutes.DocumentaryUnits.linkAnnotate _))
+      Ok(views.html.link.linkSourceList(item, page, params, facets, etype,
+          docRoutes.linkAnnotateSelect(id, toType),
+          docRoutes.linkAnnotate _))
   }
 
   def linkAnnotate(id: String, toType: String, to: String) = linkAction(id, toType, to) {
       target => source => implicit userOpt => implicit request =>
-    Ok(views.html.linking.link(target, source,
-        LinkForm.form, archdescRoutes.DocumentaryUnits.linkAnnotatePost(id, toType, to)))
+    Ok(views.html.link.link(target, source,
+        LinkForm.form, docRoutes.linkAnnotatePost(id, toType, to)))
   }
 
   def linkAnnotatePost(id: String, toType: String, to: String) = linkPostAction(id, toType, to) {
       formOrAnnotation => implicit userOpt => implicit request =>
     formOrAnnotation match {
       case Left((target,source,errorForm)) => {
-        BadRequest(views.html.linking.link(target, source,
-          errorForm, archdescRoutes.DocumentaryUnits.linkAnnotatePost(id, toType, to)))
+        BadRequest(views.html.link.link(target, source,
+          errorForm, docRoutes.linkAnnotatePost(id, toType, to)))
       }
       case Right(annotation) => {
-        Redirect(archdescRoutes.DocumentaryUnits.get(id))
+        Redirect(docRoutes.get(id))
           .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
       }
     }
@@ -306,19 +307,19 @@ class DocumentaryUnits @Inject()(implicit val globalConfig: global.GlobalConfig)
 
   def linkMultiAnnotate(id: String) = linkMultiAction(id) {
       target => implicit userOpt => implicit request =>
-    Ok(views.html.linking.linkMulti(target,
-        LinkForm.multiForm, archdescRoutes.DocumentaryUnits.linkMultiAnnotatePost(id)))
+    Ok(views.html.link.linkMulti(target,
+        LinkForm.multiForm, docRoutes.linkMultiAnnotatePost(id)))
   }
 
   def linkMultiAnnotatePost(id: String) = linkPostMultiAction(id) {
       formOrAnnotations => implicit userOpt => implicit request =>
     formOrAnnotations match {
       case Left((target,errorForms)) => {
-        BadRequest(views.html.linking.linkMulti(target,
-          errorForms, archdescRoutes.DocumentaryUnits.linkMultiAnnotatePost(id)))
+        BadRequest(views.html.link.linkMulti(target,
+          errorForms, docRoutes.linkMultiAnnotatePost(id)))
       }
       case Right(annotations) => {
-        Redirect(archdescRoutes.DocumentaryUnits.get(id))
+        Redirect(docRoutes.get(id))
           .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
       }
     }

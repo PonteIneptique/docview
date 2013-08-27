@@ -51,7 +51,7 @@ package globalconfig {
 
     implicit lazy val menuConfig: MenuConfig = new MenuConfig {
       val mainSection: Iterable[(String, String)] = Seq(
-        ("pages.search",                  controllers.routes.Search.search.url),
+        ("pages.search",                  controllers.admin.routes.Search.search.url),
         ("contentTypes.documentaryUnit",  controllers.archdesc.routes.DocumentaryUnits.search.url),
         ("contentTypes.historicalAgent",  controllers.authorities.routes.HistoricalAgents.search.url),
         ("contentTypes.repository",       controllers.archdesc.routes.Repositories.search.url),
@@ -66,7 +66,7 @@ package globalconfig {
         ("s1", "-"),
         ("contentTypes.systemEvent",      controllers.core.routes.SystemEvents.list.url),
         ("s2", "-"),
-        ("search.updateIndex",            controllers.routes.Search.updateIndex.url)
+        ("search.updateIndex",            controllers.admin.routes.Search.updateIndex.url)
       )
     }
 
@@ -82,13 +82,13 @@ package globalconfig {
       EntityType.Repository -> controllers.archdesc.routes.Repositories.get _,
       EntityType.Group -> controllers.core.routes.Groups.get _,
       EntityType.UserProfile -> controllers.core.routes.UserProfiles.get _,
-      EntityType.Annotation -> controllers.core.routes.Annotations.get _,
-      EntityType.Link -> controllers.core.routes.Links.get _,
+      EntityType.Annotation -> controllers.annotation.routes.Annotations.get _,
+      EntityType.Link -> controllers.linking.routes.Links.get _,
       EntityType.Vocabulary -> controllers.vocabs.routes.Vocabularies.get _,
       EntityType.AuthoritativeSet -> controllers.authorities.routes.AuthoritativeSets.get _,
       EntityType.Concept -> controllers.vocabs.routes.Concepts.get _,
       EntityType.Country -> controllers.archdesc.routes.Countries.get _
-    ), default = (s: String) => new Call("GET", "/"))
+    ), default = controllers.admin.routes.Home.index)
   }
 }
 
@@ -122,12 +122,6 @@ object Global extends WithFilters(new AjaxCSRFFilter()) with GlobalSettings {
 
     // Hack for bug #845
     app.routes
-
-    // Register JSON models! This is still currently
-    // operating on mutable state until I can work out
-    // how to inject it without
-    models.json.Utils.registerModels
-
 
     // Bind the EntityDAO Create/Update/Delete actions
     // to the SolrIndexer update/delete handlers

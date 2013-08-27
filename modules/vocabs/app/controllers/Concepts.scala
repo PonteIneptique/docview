@@ -1,6 +1,5 @@
 package controllers.vocabs
 
-import _root_.controllers.ListParams
 import play.api.libs.concurrent.Execution.Implicits._
 import forms.VisibilityForm
 import controllers.base._
@@ -8,8 +7,7 @@ import models._
 import models.forms.LinkForm
 import play.api._
 import play.api.i18n.Messages
-import defines.{ContentType, EntityType}
-import collection.immutable.ListMap
+import defines.{ContentTypes, EntityType}
 import solr.facet.FieldFacetClass
 import views.Helpers
 import utils.search.{SearchParams, FacetSort}
@@ -29,16 +27,16 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
   with EntitySearch
   with ApiBase[Concept] {
 
-  val targetContentTypes = Seq(ContentType.Concept)
+  val targetContentTypes = Seq(ContentTypes.Concept)
 
   val entityType = EntityType.Concept
-  val contentType = ContentType.Concept
+  val contentType = ContentTypes.Concept
 
   val form = models.forms.ConceptForm.form
   val childForm = models.forms.ConceptForm.form
 
 
-  override val entityFacets = List(
+  private val entityFacets = List(
     FieldFacetClass(
       key="languageCode", // FIXME - define elsewhere
       name=Messages("concept.languageCode"),
@@ -57,20 +55,18 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
   val DEFAULT_SEARCH_PARAMS = SearchParams(entities = List(entityType))
 
 
-  def get(id: String) = getWithChildrenAction[Concept](id) { item => page => params => annotations => links =>
-      implicit userOpt => implicit request =>
+  def get(id: String) = getWithChildrenAction[Concept](id) {
+      item => page => params => annotations => links => implicit userOpt => implicit request =>
     Ok(views.html.concept.show(item, page, params, annotations))
   }
 
-  def search = {
-    searchAction[Concept](defaultParams = Some(DEFAULT_SEARCH_PARAMS)) {
-        page => params => facets => implicit userOpt => implicit request =>
-      Ok(views.html.concept.search(page, params, facets, controllers.vocabs.routes.Concepts.search))
-    }
+  def search = searchAction[Concept](defaultParams = Some(DEFAULT_SEARCH_PARAMS), entityFacets = entityFacets) {
+      page => params => facets => implicit userOpt => implicit request =>
+    Ok(views.html.concept.search(page, params, facets, controllers.vocabs.routes.Concepts.search))
   }
 
-  def history(id: String) = historyAction(id) { item => page => implicit userOpt => implicit request =>
-    Ok(views.html.systemEvents.itemList(item, page, ListParams()))
+  def history(id: String) = historyAction(id) { item => page => params => implicit userOpt => implicit request =>
+    Ok(views.html.systemEvents.itemList(item, page, params))
   }
 
   def list = listAction { page => params => implicit userOpt => implicit request =>
@@ -92,13 +88,13 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
     }
   }
 
-  def createConcept(id: String) = childCreateAction(id, ContentType.Concept) {
+  def createConcept(id: String) = childCreateAction(id, ContentTypes.Concept) {
       item => users => groups => implicit userOpt => implicit request =>
     Ok(views.html.concept.create(
         item, childForm, VisibilityForm.form, users, groups, controllers.vocabs.routes.Concepts.createConceptPost(id)))
   }
 
-  def createConceptPost(id: String) = childCreatePostAction(id, childForm, ContentType.Concept) {
+  def createConceptPost(id: String) = childCreatePostAction(id, childForm, ContentTypes.Concept) {
       item => formsOrItem => implicit userOpt => implicit request =>
     formsOrItem match {
       case Left((errorForm,accForm)) => getUsersAndGroups { users => groups =>
@@ -134,8 +130,7 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
         .flashing("success" -> Messages("confirmations.itemWasUpdated", id))
   }
 
-  def managePermissions(id: String, page: Int = 1, spage: Int = 1, limit: Int = DEFAULT_LIMIT) =
-    manageScopedPermissionsAction(id, page, spage, limit) {
+  def managePermissions(id: String) = manageScopedPermissionsAction(id) {
       item => perms => sperms => implicit userOpt => implicit request =>
     Ok(views.html.permissions.manageScopedPermissions(item, perms, sperms,
         controllers.vocabs.routes.Concepts.addItemPermissions(id), controllers.vocabs.routes.Concepts.addScopedPermissions(id)))
@@ -179,7 +174,7 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
 
   def linkAnnotate(id: String, toType: String, to: String) = linkAction(id, toType, to) {
       target => source => implicit userOpt => implicit request =>
-    Ok(views.html.linking.link(target, source,
+    Ok(views.html.link.link(target, source,
             LinkForm.form, controllers.vocabs.routes.Concepts.linkAnnotatePost(id, toType, to)))
   }
 
@@ -187,7 +182,7 @@ class Concepts @Inject()(implicit val globalConfig: global.GlobalConfig) extends
       formOrAnnotation => implicit userOpt => implicit request =>
     formOrAnnotation match {
       case Left((target,source,errorForm)) => {
-          BadRequest(views.html.linking.link(target, source,
+          BadRequest(views.html.link.link(target, source,
               errorForm, controllers.vocabs.routes.Concepts.linkAnnotatePost(id, toType, to)))
       }
       case Right(annotation) => {
