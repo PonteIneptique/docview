@@ -4,6 +4,19 @@ jQuery(function ($) {
 * Quick search
 */
 
+  var $URI_MAKER = function(type, id) {
+    if(type == "documentaryUnit") {
+      return "/units/" + id;
+    } else if (type == "country") {
+      return "/countries/" + id;
+    } else if (type == "repository") {
+      return "/repositories/" + id;
+    } else if (type == "historicalAgent") {
+      return "/authorities/" + id;
+    } else {
+      return "/search?q=" + id;
+    }
+  }
   var $quicksearch = $("#quicksearch");
   var $quicksearchBH = new Bloodhound({
                           datumTokenizer: function (d) {
@@ -11,23 +24,28 @@ jQuery(function ($) {
                           },
                           queryTokenizer: Bloodhound.tokenizers.whitespace,
                           remote: {
-                            url : jsRoutes.controllers.core.SearchFilter.filter().url + "?limit=5&q=%QUERY",
+                            url : jsRoutes.controllers.core.SearchFilter.filter().url + "?limit=5&st[]=documentaryUnit&st[]=repository&st[]=historicalAgent&st[]=country&q=%QUERY",
                             filter : function(parsedResponse) {
                               var result = [];
+                              var alreadyResult = [];
 
                               for (var i=0; i<parsedResponse.items.length; i++) {
                                 //Need to check if item not already in the db
-                                result.push({
-                                  name: parsedResponse.items[i][1],
-                                  value: parsedResponse.items[i][0]
-                                });
+                                if($.inArray( parsedResponse.items[i][1] , alreadyResult) === -1) {
+                                  result.push({
+                                    name: parsedResponse.items[i][1],
+                                    value: parsedResponse.items[i][1],
+                                    href : $URI_MAKER(parsedResponse.items[i][2], parsedResponse.items[i][0])
+                                  });
+                                  alreadyResult.push(parsedResponse.items[i][1]);
+                                }
                               }
                               return result;
                             }
                           }
                         });
   $quicksearchBH.initialize();
-  var $quicksearchTemplate = Handlebars.compile('<b>{{name}}</b>');
+  var $quicksearchTemplate = Handlebars.compile('<a href="{{href}}">{{name}}</a>');
 
   /**
    * Initialize typeahead.js
@@ -41,16 +59,14 @@ jQuery(function ($) {
         suggestion : $quicksearchTemplate
       }
     }
-  ).on('typeahead:selected', function(e, data) {
-    //Either do search
-  });
+  );
   //Need to reenable enter for getSearch
 
 /*
   Search helpers
 */
 $(".page-content").on("click", ".search-helper-toggle", function () {
-  $("#search-helper").toggle(`);
+  $("#search-helper").toggle();
 });
 
 $(".page-content").on("click", "#search-helper .close", function(e) {
