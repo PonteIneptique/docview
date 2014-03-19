@@ -4,19 +4,7 @@ jQuery(function ($) {
 * Quick search
 */
 
-  var $URI_MAKER = function(type, id) {
-    if(type == "documentaryUnit") {
-      return "/units/" + id;
-    } else if (type == "country") {
-      return "/countries/" + id;
-    } else if (type == "repository") {
-      return "/repositories/" + id;
-    } else if (type == "historicalAgent") {
-      return "/authorities/" + id;
-    } else {
-      return "/search?q=" + id;
-    }
-  }
+
   var $quicksearch = $("#quicksearch");
   var $quicksearchBH = new Bloodhound({
                           datumTokenizer: function (d) {
@@ -35,7 +23,7 @@ jQuery(function ($) {
                                   result.push({
                                     name: parsedResponse.items[i][1],
                                     value: parsedResponse.items[i][1],
-                                    href : $URI_MAKER(parsedResponse.items[i][2], parsedResponse.items[i][0])
+                                    href : jsRoutes.controllers.portal.Portal.browseItem(parsedResponse.items[i][2], parsedResponse.items[i][0]).url
                                   });
                                   alreadyResult.push(parsedResponse.items[i][1]);
                                 }
@@ -59,7 +47,11 @@ jQuery(function ($) {
         suggestion : $quicksearchTemplate
       }
     }
-  );
+  ).keypress(function(e) {
+    if(e.which == 13) {
+        $(this).parents("form").submit();
+    }
+});
   //Need to reenable enter for getSearch
 
 /*
