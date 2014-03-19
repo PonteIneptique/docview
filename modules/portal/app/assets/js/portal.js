@@ -1,11 +1,56 @@
 jQuery(function ($) {
 
+/*
+* Quick search
+*/
+
+  var $quicksearch = $("#quicksearch");
+  var $quicksearchBH = new Bloodhound({
+                          datumTokenizer: function (d) {
+                                return Bloodhound.tokenizers.whitespace(d); 
+                          },
+                          queryTokenizer: Bloodhound.tokenizers.whitespace,
+                          remote: {
+                            url : jsRoutes.controllers.core.SearchFilter.filter().url + "?limit=5&q=%QUERY",
+                            filter : function(parsedResponse) {
+                              var result = [];
+
+                              for (var i=0; i<parsedResponse.items.length; i++) {
+                                //Need to check if item not already in the db
+                                result.push({
+                                  name: parsedResponse.items[i][1],
+                                  value: parsedResponse.items[i][0]
+                                });
+                              }
+                              return result;
+                            }
+                          }
+                        });
+  $quicksearchBH.initialize();
+  var $quicksearchTemplate = Handlebars.compile('<b>{{name}}</b>');
+
+  /**
+   * Initialize typeahead.js
+   */
+  $('#quicksearch').typeahead(
+    null,
+    {
+      name: "quicksearch",
+      source: $quicksearchBH.ttAdapter(),
+      templates: {
+        suggestion : $quicksearchTemplate
+      }
+    }
+  ).on('typeahead:selected', function(e, data) {
+    //Either do search
+  });
+  //Need to reenable enter for getSearch
 
 /*
   Search helpers
 */
 $(".page-content").on("click", ".search-helper-toggle", function () {
-  $("#search-helper").toggle();
+  $("#search-helper").toggle(`);
 });
 
 $(".page-content").on("click", "#search-helper .close", function(e) {
