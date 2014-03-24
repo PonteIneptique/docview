@@ -21,6 +21,10 @@
 		border:0;
 		box-shadow:0;
 		font-family: 'Lato', sans-serif;
+
+		h3 {
+			.panel-title;
+		}
 	}
 	.panel-body {
 		border-radius:0;
@@ -68,7 +72,7 @@ body.country .panel-details {
   .panel-color(@country-color);
 }
 
-body.repository .panel-details {
+body.repository .panel-details, body .panel-details.repository {
   .panel-color(@repo-color);
 }
 
