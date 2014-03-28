@@ -32,7 +32,7 @@
             @defining(desc(fname)) { field =>
                 <td class="@{if(field.hasErrors) "has-error"}">
                     <div class="input-group">
-                        <span class="datepicker-activation input-group-addon" data-target="@field.name"><span class="glyphicon glyphicon-calendar"></span></span>
+                        <span class="datepicker-activation input-group-addon" data-target="#@field.id"><span class="glyphicon glyphicon-calendar"></span></span>
                         <input class="form-control datepicker"  data-date-format="mm-dd-yyyy" placeholder="yyyy-mm-dd" type="text" name="@field.name" value="@field.value" placeholder="@Messages(fieldPrefix + "." + fname)" id="@field.id" />
                     </div>
                 </td>

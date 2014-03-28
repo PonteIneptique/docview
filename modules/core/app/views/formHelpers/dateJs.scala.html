@@ -30,36 +30,40 @@
         //Create datepicker
         var createDatepicker = function(target, forced) {
             var process = false,
-                override = true;
+                override = true,
+                hasDP = hasDatepicker(target),
+                show = false;
 
-            if(hasDatepicker(target)) { 
+            if(hasDP === true) { 
                 process = true;
                 target.datepicker("remove"); 
-            }
-            if(typeof forced !== "undefined" && forced === true) {
+            } else if(typeof forced !== "undefined" && forced === true) {
                 process = true;
                 override = false;
+                show = true;
             }
-            if(process) {
+
+            if(process === true) {
                 target.datepicker({
                     startView: defaultStartView, 
                     format: function() {
-                        return defaultFormat(target, override);
+                        console.log(defaultFormat(target));
+                        return defaultFormat(target);
                     },
                     minViewMode : function() {
-                        return defaultMinViewMode(target, override);
+                        return defaultMinViewMode(target);
                     }
                 });
+                target.addClass("datepicker-activated");
+                if(show === true) {
+                    target.datepicker("show");
+                }
             }
         }
 
-        var defaultFormat =function(that, datepick) {
-            if(datepick === false) {
-                precision = that.val();
-            } else {
-                name = that.attr("name");
-                precision = $(dateField("precision", name)).val();
-            }
+        var defaultFormat =function(that) {
+            name = that.attr("name");
+            precision = $(dateField("precision", name)).val();
 
             switch (precision) {
                 case 'month':
@@ -77,14 +81,9 @@
             return precision || "yyyy-mm-dd";
         }
 
-        var defaultMinViewMode = function(that, datepick) {
-            if(datepick === false) {
-                precision = that.val();
-            } else {
-                name = that.attr("name");
-                precision = $(dateField("precision", name)).val();
-            }
-
+        var defaultMinViewMode = function(that) {
+            name = that.attr("name");
+            precision = $(dateField("precision", name)).val();
 
             switch (precision) {
                 case 'month':
@@ -104,7 +103,7 @@
         }
 
         var hasDatepicker = function(obj) {
-            if(typeof obj.datepicker === "undefined") {
+            if(obj.hasClass("datepicker-activated") === false) {
                 return false;
             } else {
                 return true;
@@ -140,8 +139,6 @@
                         table = [table[0]];
                     }
                 }
-                console.log(table);
-                console.log(table.length);
                 if(table.length > 0) { //Checking for bug
                     switch (table.length) {
                         case 2:
@@ -164,11 +161,10 @@
             }
         });
         
-        $(document).on('click', 'datepicker-activation', function () {
-            var that = $($(this).attr("data-target"));
-
-            createDatepicker(that, true);
-            that.datepicker('show');
+        $(document).on('click', '.datepicker-activation', function() {
+            var name = $(this).attr("data-target");
+            target = $(name);
+            createDatepicker(target, true);
         });
     });
 </script>
