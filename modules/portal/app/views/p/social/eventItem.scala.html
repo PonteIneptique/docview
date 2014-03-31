@@ -2,15 +2,42 @@
 
 @import defines.EventType
 
-@eventBody(event: SystemEvent)(html: Html) = {
+@eventBadge(et: Any) = {
+    @et match {
+        case EventType.creation => {
+            <div class="timeline-badge success"><i class="glyphicon glyphicon-floppy-disk"></i></div>
+        }
+        case EventType.modification | EventType.createDependent | EventType.modifyDependent => {
+            <div class="timeline-badge info"><i class="glyphicon glyphicon-refresh"></i></div>
+        }
+        case EventType.deleteDependent => {
+            <div class="timeline-badge warning"><i class="glyphicon glyphicon-remove"></i></div>
+        }
+        case EventType.ingest => {
+            <div class="timeline-badge info"><i class="glyphicon glyphicon-save"></i></div>
+        }
+        case EventType.link => {
+            <div class="timeline-badge info"><i class="glyphicon glyphicon-link"></i></div>
+        }
+        case EventType.annotation => {
+            <div class="timeline-badge success"><i class="glyphicon glyphicon-pencil"></i></div>
+        }
+        case _ => {
+            <div class="timeline-badge"><i class="glyphicon"></i></div>
+        }
+    }
+}
+@eventBody(event: SystemEvent, user: models.base.Accessor, et: Any)(html: Html) = {
+
     <li>
       <div class="timeline-panel-container">
           <div class="timeline-panel">
             <div class="timeline-heading">
-              <h4 class="timeline-title">@html</h4>
+              <h4 class="timeline-title">@user.toStringLang</h4>
               <p><small class="text-muted"><i class="glyphicon glyphicon-time"></i> @views.Helpers.relativeDate(event.model.timestamp)</small></p>
             </div>
             <div class="timeline-body">
+                <p>@html</p>
                 @event.model.logMessage.filterNot(_.trim.isEmpty).map { msg =>
                     <blockquote class="log-message blockquote">@msg</blockquote>
                 }
@@ -20,7 +47,7 @@
       <div class="timeline-separator">&nbsp;</div>
       <div class="timeline-badge-container">
         <div class="timeline-badge-spacer">&nbsp;</div>
-        <div class="timeline-badge"><i class="glyphicon glyphicon-check"></i></div>
+        @eventBadge(et)
       </div>
     </li>
 }
@@ -28,7 +55,7 @@
 @* NB: This will ignore events for which we don't have a type, user, subject, and subject count, which is
         probably how it should be anyway. *@
 @for(et <- event.model.eventType; user <- event.actioner; subject <- event.firstSubject; count <- event.childCount) {
-    @eventBody(event) {
+    @eventBody(event, user, et) {
         @et match {
             case EventType.modification if user.id == subject.id => {
                 <a title="@user.toStringLang" href="@controllers.portal.routes.Portal.browseUser(user.id)">
