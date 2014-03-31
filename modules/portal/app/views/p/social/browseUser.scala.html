@@ -12,9 +12,11 @@
         <div class="user-profile-activity">
             @p.common.panel(Messages("portal.activity")) {
                 @if(!events.isEmpty) {
-                    <ul id="activity-stream" class="list-unstyled">
-                        @p.common.eventItems(events)
+                <div class="timeline-container">
+                    <ul id="activity-stream" class="timeline"s>
+                        @eventItems(events)
                     </ul>
+                </div>
                 } else {
                     <p class="text-muted">@Messages("portal.activity.noUserActivityYet")</p>
                 }
