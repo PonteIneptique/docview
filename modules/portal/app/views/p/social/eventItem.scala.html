@@ -1,6 +1,7 @@
 @(event: SystemEvent)(implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.GlobalConfig, lang: Lang)
 
 @import defines.EventType
+@import models.{Annotation,AnnotationF}
 
 @eventBadge(et: Any) = {
     @et match {
@@ -27,6 +28,13 @@
         }
     }
 }
+
+@eventModification(subject: models.Annotation) = {
+    @subject.target.map{ target => 
+        @p.helpers.linkToWithFragment(target, "#" + subject.id)
+    }
+}
+
 @eventBody(event: SystemEvent, user: models.base.Accessor, et: Any)(html: Html) = {
 
     <li>
@@ -65,7 +73,18 @@
             case EventType.creation => {
                 @Html(Messages("portal.activity.userCreatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
             }
-            case EventType.modification | EventType.createDependent | EventType.modifyDependent | EventType.deleteDependent => {
+            case EventType.modification => {
+
+                @subject match {
+                    case m: Annotation => { 
+                        @Html(Messages("portal.activity.userUpdatedItem", p.helpers.linkTo(user), eventModification(m), count - 1))
+                    }
+                    case _ => { 
+                        @Html(Messages("portal.activity.userUpdatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
+                    }
+                }
+            }
+            case EventType.createDependent | EventType.modifyDependent | EventType.deleteDependent => {
                 @Html(Messages("portal.activity.userUpdatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
             }
             case EventType.ingest => {
