@@ -10,7 +10,8 @@
     <div class="main-content">
         @profileForUser(them)
         <div class="user-profile-activity">
-            @p.common.panel(Messages("portal.activity")) {
+
+                <h3 class="block-header user">@Messages("portal.activity")</h3>
                 @if(!events.isEmpty) {
                 <div class="timeline-container">
                     <ul id="activity-stream" class="timeline">
@@ -20,7 +21,6 @@
                 } else {
                     <p class="text-muted">@Messages("portal.activity.noUserActivityYet")</p>
                 }
-            }
         </div>
     </div>
 }

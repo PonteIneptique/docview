@@ -31,31 +31,94 @@
 
 @eventModification(subject: models.Annotation) = {
     @subject.target.map{ target => 
-        @p.helpers.linkToWithFragment(target, "#" + subject.id)
+        @eventFooter(target, p.helpers.linkToWithFragment(target, "#" + subject.id))
     }
 }
 
-@eventBody(event: SystemEvent, user: models.base.Accessor, et: Any)(content: Html)(title: Html) = {
+@eventFooter(item : models.base.AnyModel, link: Html) = {
+    @item match {
+        case m: Country => { 
+            <div class="block-header country">@link</div>
+        }
+        case m: Concept => { 
+            <div class="block-header concept">@link</div>
+        }
+        case m: DocumentaryUnit => { 
+            <div class="block-header documentaryUnit">@link</div>
+        }
+        case m: Repository => { 
+            <div class="block-header repository">@link</div>
+        }
+        case m: HistoricalAgent => { 
+            <div class="block-header auhtority">@link</div>
+        }
+        case m: UserProfile => { 
+            <div class="block-header user">@link</div>
+        }
+        case m: Link => { 
+            <div class="block-header">@link</div>
+        }
+        case m: Annotation => { 
+            <div class="block-header">@link</div>
+        }
+        case _ => {  
+            <div class="block-header">@link</div>
+            @* No text for this one... *@
+        }
+    }
+}
+@eventTitle(user: Html, eventType: String, item: models.base.AnyModel) = {
+    @item match {
+        case m: Country => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.country"))) 
+        }
+        case m: Concept => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.concept"))) 
+        }
+        case m: DocumentaryUnit => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.documentaryUnit")))
+        }
+        case m: Repository => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.repository"))) 
+        }
+        case m: HistoricalAgent => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.historicalAgent"))) 
+        }
+        case m: UserProfile => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.profile"))) 
+        }
+        case m: Link => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.link"))) 
+        }
+        case m: Annotation => { 
+            @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.annotation"))) 
+        }
+        case _ => {  
+            @* No text for this one... *@
+        }
+    }
+    
+}
+@eventBody(event: SystemEvent, user: models.base.Accessor, et: Any, subject: models.base.AnyModel)(content: Html) = {
     
     <li>
       <div class="timeline-panel-container">
           <div class="timeline-panel">
             <div class="timeline-heading">
-              <h4 class="timeline-title">@title</h4>
-            </div>
-            <div class="timeline-body">
-                <p>@content</p>
-            </div>
-            <p class="text-right">
                 @user match {
                     case up: UserProfile => {
                         @defining(up.model.imageUrl.getOrElse(controllers.portal.routes.Assets.at("img/default-gravitar.png").url)) { src =>
-                            <img src="@src" alt="@up.model.name" class="gravitar" /> &nbsp; 
+                            <img src="@src" alt="@up.model.name" class="gravitar pull-left" />
                         }
                     }
                 }
-                <small class="text-muted"><i class="glyphicon glyphicon-time"></i> @views.Helpers.relativeDate(event.model.timestamp)</small>
-            </p>
+
+                <h4 class="timeline-title">@eventTitle(p.helpers.linkTo(user), et.toString, subject)</h4>
+                <small class="timeline-time"><i class="glyphicon glyphicon-time"></i> @views.Helpers.relativeDate(event.model.timestamp)</small>
+            </div>
+            <div class="timeline-body">
+                @content
+            </div>
           </div>
       </div>
       <div class="timeline-separator">&nbsp;</div>
@@ -69,110 +132,55 @@
 @* NB: This will ignore events for which we don't have a type, user, subject, and subject count, which is
         probably how it should be anyway. *@
 @for(et <- event.model.eventType; user <- event.actioner; subject <- event.firstSubject; count <- event.childCount) {
-    @eventBody(event, user, et) {
+    @eventBody(event, user, et, subject) {
         @et match {
             case EventType.modification if user.id == subject.id => {
-                <a title="@user.toStringLang" href="@controllers.portal.routes.Portal.browseUser(user.id)">
-                    @Messages("portal.activity.modifiedProfile")
-                </a>
-            }
-            case EventType.creation => {
-                @Html(Messages("portal.activity.userCreatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
+                @* No text for this one... *@
             }
             case EventType.modification => {
 
                 @subject match {
                     case m: Annotation => { 
-                        @Html(Messages("portal.activity.userUpdatedItem"))
-                    }
-                    case _ => { 
-                        @Html(Messages("portal.activity.userUpdatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
-                    }
-                }
-            }
-            case EventType.createDependent | EventType.modifyDependent | EventType.deleteDependent => {
-                @Html(Messages("portal.activity.userUpdatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
-            }
-            case EventType.ingest => {
-                @Html(Messages("portal.activity.userImportedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
-            }
-            case EventType.link => {
-                @* Annotations and links are special cases. We could like directly to the item but it wouldn't be very useful for the user.
-                Instead we link to the scope item (if it's available), with the link/comment id as a fragment. *@
-                @event.scope.map { scope =>
-                    @if(scope.id == subject.id) {
-                        @Html(Messages("portal.activity.userLinkedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
-                    } else {
-                        @Html(Messages("portal.activity.userLinkedItem", p.helpers.linkTo(user), p.helpers.linkToWithFragment(scope, "#" + subject.id), count - 1))
-                    }
-                }
-            }
-            case EventType.annotation => {
-                @event.scope.map { scope =>
-                    @if(scope.id == subject.id) {
-                        @Html(Messages("portal.activity.userAnnotatedItem", p.helpers.linkTo(user), p.helpers.linkTo(subject), count - 1))
-                    } else {
-                        @Html(Messages("portal.activity.userAnnotatedItem", p.helpers.linkTo(user), p.helpers.linkToWithFragment(scope, "#" + subject.id), count - 1))
-                    }
-                }
-            }
-            case _ => {
-                @* Not bothering with other events yet... *@
-                @et
-            }
-        }
-    } {
-        @et match {
-            case EventType.modification if user.id == subject.id => {
-                <a title="@user.toStringLang" href="@controllers.portal.routes.Portal.browseUser(user.id)">
-                    @Messages("portal.activity.modifiedProfile")
-                </a>
-            }
-            case EventType.creation => {
-                @p.helpers.linkTo(subject)
-            }
-            case EventType.modification => {
-
-                @subject match {
-                    case m: Annotation => { 
+                        <blockquote>@m.model.body</blockquote>
                         @eventModification(m)
                     }
                     case _ => { 
-                        @p.helpers.linkTo(subject)
+                       @eventFooter(subject, p.helpers.linkTo(subject))
                     }
                 }
             }
-            case EventType.createDependent | EventType.modifyDependent | EventType.deleteDependent => {
-                @p.helpers.linkTo(subject)
-            }
-            case EventType.ingest => {
-                @p.helpers.linkTo(subject)
-            }
             case EventType.link => {
-                @* Annotations and links are special cases. We could like directly to the item but it wouldn't be very useful for the user.
+                @* Annotations and links are special cases. We could link directly to the item but it wouldn't be very useful for the user.
                 Instead we link to the scope item (if it's available), with the link/comment id as a fragment. *@
                 @event.scope.map { scope =>
                     @if(scope.id == subject.id) {
-                        @p.helpers.linkTo(subject)
+                        @eventFooter(subject, p.helpers.linkTo(subject))
                     } else {
-                        @p.helpers.linkToWithFragment(scope, "#" + subject.id)
+                        @eventFooter(scope, p.helpers.linkToWithFragment(scope, "#" + subject.id))
                     }
                 }
             }
             case EventType.annotation => {
+                @subject match {
+                    case m: Annotation => { 
+                        <blockquote>@m.model.body</blockquote>
+                    }
+                    case _ => { 
+                        @* Nothing to do there *@
+                    }
+                }
                 @event.scope.map { scope =>
                     @if(scope.id == subject.id) {
-                        @p.helpers.linkTo(subject))
+                        @eventFooter(subject, p.helpers.linkTo(subject))
                     } else {
-                        @p.helpers.linkToWithFragment(scope, "#" + subject.id)
+                        @eventFooter(scope, p.helpers.linkToWithFragment(scope, "#" + subject.id))
                     }
                 }
             }
             case _ => {
                 @* Not bothering with other events yet... *@
-                @et
+                @eventFooter(subject, p.helpers.linkTo(subject))
             }
         }
     }
 }
-
