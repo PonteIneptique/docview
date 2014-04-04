@@ -50,7 +50,7 @@
             <div class="block-header repository">@link</div>
         }
         case m: HistoricalAgent => { 
-            <div class="block-header auhtority">@link</div>
+            <div class="block-header historicalAgent">@link</div>
         }
         case m: UserProfile => { 
             <div class="block-header user">@link</div>
@@ -113,7 +113,26 @@
                     }
                 }
 
-                <h4 class="timeline-title">@eventTitle(p.helpers.linkTo(user), et.toString, subject)</h4>
+                <h4 class="timeline-title">
+                @et match {
+                    case EventType.link | EventType.annotation => {
+                        @subject match {
+                            case m: Annotation => { 
+                                @event.scope.map { scope =>
+                                    @eventTitle(p.helpers.linkTo(user), et.toString, scope)
+                                }
+                            }
+                            case _ => { 
+                                @eventTitle(p.helpers.linkTo(user), et.toString, subject)
+                            }
+                        }
+                    }
+                    case _ => { 
+                        @eventTitle(p.helpers.linkTo(user), et.toString, subject)
+                    }
+                }
+
+                </h4>
                 <small class="timeline-time"><i class="glyphicon glyphicon-time"></i> @views.Helpers.relativeDate(event.model.timestamp)</small>
             </div>
             <div class="timeline-body">
