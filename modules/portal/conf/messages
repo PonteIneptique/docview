@@ -165,6 +165,7 @@ portal.social.timeline.eventType.ingest={0} imported {1}
 portal.social.timeline.eventType.creation={0} created {1}
 portal.social.timeline.eventType.annotation={0} annotated {1}
 portal.social.timeline.eventType.modification={0} updated {1}
+portal.social.timeline.eventType.link={0} linked {1}
 portal.social.timeline.eventType.createDependent={0} updated {1}
 portal.social.timeline.eventType.modifyDependent={0} updated {1}
 portal.social.timeline.eventType.deleteDependent={0} updated {1}

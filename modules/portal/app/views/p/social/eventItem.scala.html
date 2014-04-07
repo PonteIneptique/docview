@@ -94,6 +94,7 @@
             @Html(Messages("portal.social.timeline.eventType." + eventType, user, Messages("portal.social.timeline.target.annotation"))) 
         }
         case _ => {  
+            @item
             @* No text for this one... *@
         }
     }
@@ -118,6 +119,11 @@
                     case EventType.link | EventType.annotation => {
                         @subject match {
                             case m: Annotation => { 
+                                @event.scope.map { scope =>
+                                    @eventTitle(p.helpers.linkTo(user), et.toString, scope)
+                                }
+                            }
+                            case m: AccessPoint => { 
                                 @event.scope.map { scope =>
                                     @eventTitle(p.helpers.linkTo(user), et.toString, scope)
                                 }
