@@ -36,6 +36,25 @@
 			padding-top: @small-padding;
 		}
 	}
+	.nav {
+		margin:0;
+		padding:0;
+		> li {
+			list-style-type:none;
+			display:block;
+			margin:0;
+			padding:0;
+			> a {
+				&:hover,
+				&:focus {
+					background-color:inherit;
+				}
+			}
+			&.active > a {
+				.text-muted;
+			}
+		}
+	}
 	.user-profile-description {
 		margin-top:5px;
 		font-size:90%;
@@ -70,4 +89,65 @@
 			display:block;
 		}
 	}
+}
+.user-profile-content {
+	.annotation {
+		padding:3px 3px 0 3px;
+		border-bottom:1px dashed @pale-gray;
+		margin-bottom:10px;
+
+		blockquote {
+			margin :2px;
+			font-size:95%;
+		}
+
+		.annotation-header {
+			small {
+				display:block;
+				text-align:right;
+				.text-muted;
+			}
+		}
+		.annotation-footer {
+			font-size:90%;
+			display:block;
+			text-align:right;
+			.text-muted;
+		}
+		&:hover {
+			background-color:@pale-gray;
+		}
+	}
+	.item-link {
+		padding:3px;
+		border-bottom:1px dashed @pale-gray;
+
+		.link-target-list {
+			.glyphicon-link;
+			&:before {
+				display: inline;
+				font-family: 'Glyphicons Halflings';
+				font-style: normal;
+				font-weight: normal;
+				line-height: 1;
+				position: relative;
+				top: 1px;
+			}
+			> li {
+				display:inline;
+				&:after {
+					content:", ";
+					display:inline;
+				}
+				&:last-child {
+					&:after {
+						content: " ";
+					}
+				}
+			}
+		}
+	}
+}
+body.user .main-content {
+	padding-top:0;
 }
