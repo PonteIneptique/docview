@@ -117,6 +117,7 @@ portal.noDetails=---
 
 # Activity...
 portal.activity=Activity
+portal.activity.user=My Activity
 portal.activity.latestActivity=Latest Activity
 portal.activity.userCreatedItem={2,choice,0#{0} created item {1}|1#{0} created {1} and 1 more item|1<{0} created {1} and {2,number,integer} more items}
 portal.activity.userUpdatedItem={2,choice,0#{0} updated item {1}|1#{0} updated {1} and 1 more item|1<{0} updated {1} and {2,number,integer} more items}
