@@ -21,6 +21,9 @@ object ConceptF {
   val ALTLABEL = "altLabel"
   val DEFINITION = "definition"
   val SCOPENOTE = "scopeNote"
+  
+  val LONGITUDE = "longitude"
+  val LATITUDE = "latitude"
 
   // NB: Type is currently unused...
   object ConceptType extends Enumeration {
