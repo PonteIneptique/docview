@@ -38,7 +38,16 @@
         ""
     }
     case d: Concept => {
-        ""
+        <div class="item-option"><i class="item-nice-checkbox fa fa-square-o"></i></div>
+        <a class="item-title keyword-title">
+            @d.broaderTerms.map { bt =>
+                <span class="item-parent">
+                    @bt.toStringLang
+                </span>
+            }
+            @d.toStringLang
+        </a>
+        <input class="item-checkbox" type="checkbox" value="5" />
     }
     case _ => {
         ""
