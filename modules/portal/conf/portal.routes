@@ -94,6 +94,9 @@ POST        /profile/editImage              @controllers.portal.Profile.updatePr
 
 GET         /filter                         @controllers.portal.Portal.filter
 
+# Guide
+GET         /guides/person                  @controllers.portal.Portal.guideAuthority
+
 # Various JS data helpers
 GET         /routes                         controllers.portal.PortalData.jsRoutes
 GET         /globalData                         controllers.portal.PortalData.globalData

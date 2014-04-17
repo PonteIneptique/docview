@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, lang: Lang)
+@(page: utils.search.ItemPage[(HistoricalAgent,utils.search.SearchHit)], params: utils.search.SearchParams, facets: List[utils.search.AppliedFacet], action: Call, watched: List[models.base.AnyModel] = Nil)(implicit userOpt: Option[UserProfile], request: RequestHeader, prefs: utils.SessionPrefs, globalConfig: global.GlobalConfig, lang: Lang, flash: Flash)
 
 @js = {
 	<script type="text/javascript">
@@ -24,7 +24,7 @@
 	</script>
 }
 
-@layout.main("People", "people", scripts = js) {
+@p.layout.guideLayout("People", "people", scripts = js) {
 	<article>
 		<header>
 			<form role="form">
@@ -39,20 +39,17 @@
 		<section>
 			<section class="row">
 				<section class="content-results col-md-8">
+					<ul class="list-unstyled search-result-list">
+					</ul>
+
 					<ul class="list-item">
-						<li class="item-wrapper">
-							<div class="item-option  item-to-preview"><i class="glyphicon glyphicon-info-sign"></i></div>
-							<a class="item-title">Lorem ipsum</a>
-							<div class="hidden-md hidden-lg item-description">
-								<dl>
-									<dt>Birth</dt>
-									<dd>01-01-1902</dd>
-									<dt>Death</dt>
-									<dd>01-01-1972</dd>
-								</dl>
-								<p>Vivamus a ante vel neque malesuada vehicula non quis leo. Phasellus et enim rutrum, porttitor diam vel, faucibus diam. Aenean id pulvinar nisl. Sed ipsum nibh, pharetra eu felis quis, tempus egestas leo. Vestibulum ipsum lorem, pellentesque et nisi ut, tristique rhoncus odio. Morbi adipiscing eros quis quam auctor fermentum. Sed ultricies ligula augue, et suscipit lorem aliquet quis. Aenean vel nisl in massa consectetur sagittis. </p>
-							</div>
-						</li>
+					    @page.items.map { case(item, hit) =>
+					        @defining(Some(hit.id)) { implicit descriptionId =>
+					            <li class="item-wrapper">
+					                @guideItem(item, hit)
+					            </li>
+					        }
+					    }
 					</ul>
 				</section>
 				<section class="col-md-4 hidden-sm hidden-xs">
@@ -68,15 +65,7 @@
 			</section>
 		</section>
 		<footer>
-			<ul class="pagination">
-				<li><a href="#">&laquo;</a></li>
-				<li><a href="#">1</a></li>
-				<li><a href="#">2</a></li>
-				<li><a href="#">3</a></li>
-				<li><a href="#">4</a></li>
-				<li><a href="#">5</a></li>
-				<li><a href="#">&raquo;</a></li>
-			</ul>
+			@p.helpers.pagination(page)
 		</footer>
 	</article>
 

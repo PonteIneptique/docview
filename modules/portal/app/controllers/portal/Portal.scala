@@ -261,6 +261,16 @@ case class Portal @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     }
   }
 
+  /* Guides */
+
+  def guideAuthority = userBrowseAction.async { implicit userDetails => implicit request =>
+    searchAction[HistoricalAgent](Map("holderId" -> "ehri-cb"), defaultParams = Some(SearchParams(entities=List(EntityType.HistoricalAgent)))
+      ) {
+        page => params => facets => _ => _ =>
+      Ok(p.guides.person(page, params, facets, portalRoutes.browseHistoricalAgents()))
+    }.apply(request)
+  }
+
   case class NewsItem(title: String, link: String, description: Html)
 
   object NewsItem {

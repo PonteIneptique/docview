@@ -10,9 +10,9 @@
 	</script>
 }
 @css = {
-    <link rel="stylesheet" media="screen" href="@controllers.guides.routes.Assets.at("css/leaflet.css")">
+    <link rel="stylesheet" media="screen" href="@controllers.portal.routes.Assets.at("css/leaflet.css")">
 }
-@layout.main("Places browsing", "places", scripts = js, styles = css) {
+@p.layout.guideLayout("Places browsing", "places", scripts = js, styles = css) {
 	<article>
 		<header>
 			<form role="form">
