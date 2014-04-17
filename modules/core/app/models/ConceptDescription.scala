@@ -6,7 +6,7 @@ import models.json._
 import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import play.api.data.Form
-import play.api.data.format._
+import play.api.data.format.Formats._
 import play.api.data.Forms._
 import models.forms._
 
@@ -46,8 +46,8 @@ object ConceptDescriptionF {
       (__ \ DATA \ ALTLABEL).readNullable[List[String]] and
       (__ \ DATA \ DEFINITION).readNullable[List[String]] and
       (__ \ DATA \ SCOPENOTE).readNullable[List[String]] and
-      (__ \ DATA \ LONGITUDE).readNullable[Double] and
-      (__ \ DATA \ LATITUDE).readNullable[Double] and
+      (__ \ DATA \ LONGITUDE).readNullable[BigDecimal] and
+      (__ \ DATA \ LATITUDE).readNullable[BigDecimal] and
       (__ \ RELATIONSHIPS \ Ontology.HAS_ACCESS_POINT).lazyReadNullable(
         Reads.list[AccessPointF]).map(_.getOrElse(List.empty[AccessPointF])) and
       (__ \ RELATIONSHIPS \ Ontology.HAS_UNKNOWN_PROPERTY)
@@ -73,8 +73,8 @@ case class ConceptDescriptionF(
   altLabels: Option[List[String]] = None,
   definition: Option[List[String]] = None,
   scopeNote: Option[List[String]] = None,
-  longitude: Option[Double] = None,
-  latitude: Option[Double] = None,
+  longitude: Option[BigDecimal] = None,
+  latitude: Option[BigDecimal] = None,
   accessPoints: List[AccessPointF] = Nil,
   unknownProperties: List[Entity] = Nil
 ) extends Model with Persistable with Description {
@@ -97,8 +97,8 @@ object ConceptDescription {
     ALTLABEL -> optional(list(nonEmptyText)),
     DEFINITION -> optional(list(nonEmptyText)),
     SCOPENOTE -> optional(list(nonEmptyText)),
-    LONGITUDE -> optional(doubleFormat),
-    LATITUDE -> optional(doubleFormat),
+    LONGITUDE -> optional(bigDecimal),
+    LATITUDE -> optional(bigDecimal),
     ACCESS_POINTS -> list(AccessPoint.form.mapping),
     UNKNOWN_DATA -> list(entity)
   )(ConceptDescriptionF.apply)(ConceptDescriptionF.unapply))
