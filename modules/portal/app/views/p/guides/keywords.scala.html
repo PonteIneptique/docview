@@ -49,9 +49,10 @@
 @p.layout.guideLayout("Keywords", "keywords", scripts = js) {
 	<article>
 		<header>
-			<form role="form">
+			<form role="form" action="./keywords">
 				<ul class="nav nav-pills nav-ehri nav-ehri-black nav-justified">
-					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="search" placeholder="Quick Search" /></li>
+					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="q" placeholder="Quick Search" /></li>
+					<li><button type="submit" class="nav-ehri nav-ehri-black nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
 				</ul>
 				<ul class="nav nav-pills nav-ehri nav-ehri-grey nav-justified">
 					<li class="active show-hierarchy"><a href="#"><i class="fa fa-indent "></i></a></li>

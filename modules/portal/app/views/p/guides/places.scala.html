@@ -25,11 +25,10 @@
 @p.layout.guideLayout("Places browsing", "places", scripts = js, styles = css) {
 	<article>
 		<header>
-			<form role="form">
+			<form role="form" action="./map">
 				<ul class="nav nav-pills nav-ehri nav-ehri-black nav-justified">
-					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="search" placeholder="Quick Search" /></li>
-					<li><button type="button" class="nav-ehri nav-ehri-black nav-ehri-input">Terezin Map</button></li>
-					<li><button type="button" class="nav-ehri nav-ehri-black nav-ehri-input">All Places</button></li>
+					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="q" placeholder="Quick Search" /></li>
+					<li><button type="submit" class="nav-ehri nav-ehri-black nav-ehri-input">Search</button></li>
 				</ul>
 			</form>
 		</header>

@@ -27,12 +27,10 @@
 @p.layout.guideLayout("People", "people", scripts = js) {
 	<article>
 		<header>
-			<form role="form">
+			<form role="form" action="./people">
 				<ul class="nav nav-pills nav-ehri nav-ehri-black nav-justified">
-					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="search" placeholder="Name" /></li>
-					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="search" placeholder="Surname" /></li>
-					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="search" placeholder="Year of birth" /></li>
-					<li><button type="button" class="nav-ehri nav-ehri-black nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
+					<li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="q" placeholder="Name" /></li>
+					<li><button type="submit" class="nav-ehri nav-ehri-black nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
 				</ul>
 			</form>
 		</header>

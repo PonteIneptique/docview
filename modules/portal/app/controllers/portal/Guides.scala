@@ -62,7 +62,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         }
         case "organisation" => {
           val layout = "organisation"
-          val params = Map("holderId" -> "terezin-jewishcouncil")
+          val params = Map("holderId" -> "terezin-jewishcouncil", "sort" -> "childCount+asc")
           guideLayout(layout, params)
         }
         case "places" | _ => {
