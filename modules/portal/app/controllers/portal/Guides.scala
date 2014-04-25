@@ -60,6 +60,11 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
           val params = Map("holderId" -> "terezin-terms")
           guideLayout(layout, params)
         }
+        case "organisation" => {
+          val layout = "organisation"
+          val params = Map("holderId" -> "terezin-jewishcouncil")
+          guideLayout(layout, params)
+        }
         case "places" | _ => {
           val layout = "map"
           val params = Map("holderId" -> "terezin-places")
@@ -94,6 +99,13 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
             }
           }
         }
+        case "organisation" => {
+          params match {
+            case p: Map[String, String] => {
+              guideOrganization(p)
+            }
+          }
+        }
       }
   }
 
@@ -119,6 +131,15 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
       Ok(p.guides.places(page, params, facets, portalRoutes.browseConcepts(),
+        userDetails.watchedItems))
+    }.apply(request)
+  }
+
+  def guideOrganization(params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+    searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
+      entityFacets = conceptFacets) {
+        page => params => facets => _ => _ =>
+      Ok(p.guides.keywords(page, params, facets, portalRoutes.browseConcepts(),
         userDetails.watchedItems))
     }.apply(request)
   }

@@ -8,16 +8,21 @@
 			attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
 		}).addTo(map);
 
-		L.marker([50.508174054149, 14.152353697237])
-			.addTo(map)
-    		.bindPopup('A pretty CSS3 popup. <br> Easily customizable.')
+		@page.items.map { case(item, hit) =>
+			@item.model.descriptions.headOption.map { desc =>
+				@if(desc.longitude.nonEmpty) {
+					L.marker([@desc.latitude, @desc.longitude])
+						.addTo(map)
+			    		.bindPopup("@item.toStringLang")
+		    	}
+	    	}
+    	}
 	</script>
 }
 @css = {
     <link rel="stylesheet" media="screen" href="@controllers.portal.routes.Assets.at("css/leaflet.css")">
 }
 @p.layout.guideLayout("Places browsing", "places", scripts = js, styles = css) {
-	@page.items
 	<article>
 		<header>
 			<form role="form">
