@@ -94,7 +94,8 @@ POST        /profile/editImage              @controllers.portal.Profile.updatePr
 GET         /filter                         @controllers.portal.Portal.filter
 
 # Guide
-GET         /guides/:layout                  @controllers.portal.Guides.layoutRetrieval(layout : String)
+GET         /guides                         @controllers.portal.Guides.home()
+GET         /guides/:layout                 @controllers.portal.Guides.layoutRetrieval(layout : String)
 
 # Various JS data helpers
 GET         /routes                         controllers.portal.PortalData.jsRoutes

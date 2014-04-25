@@ -46,8 +46,10 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
   /* Guides */
-
-  def layoutRetrieval(key: String) = {
+  def home() = {
+    layoutRetrieval("")
+  }
+  def layoutRetrieval(key: String = "") = {
 
       key match {
         case "people" => {
