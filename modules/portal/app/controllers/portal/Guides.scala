@@ -52,10 +52,11 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
   /* Guides */
-  def home() = {
-    layoutRetrieval("places")
+  def home() = userProfileAction { implicit userOpt => implicit request =>
+   Ok(layoutRetrieval("places"))
   }
-  def layoutRetrieval(key: String) = {
+
+  def layoutRetrieval(key: String) = userProfileAction { implicit userOpt => implicit request =>
     val template = DB.withConnection { implicit connection =>
         SQL(
           """
@@ -66,38 +67,38 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         ).on('id -> key).apply().head
       }
 
-   guideLayout(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("layout_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+   Ok(guideLayout(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("layout_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page"))))
  }
 
-  def guideLayout(title:String, path: String, layout: String, params: Any) = {
+  def guideLayout(title:String, path: String, layout: String, params: Any) =  userProfileAction { implicit userOpt => implicit request =>
       /* Will be replaced by MySQL stuff */
       /* Function mapping */
       layout match {
         case "person" => {
           params match {
             case p: Map[String, String] => {
-              guideAuthority(title, path, p)
+              Ok(guideAuthority(title, path, p))
             }
           }
         }
         case "map" => {
           params match {
             case p: Map[String, String] => {
-              guideMap(title, path, p)
+              Ok(guideMap(title, path, p))
             }
           }
         }
         case "keyword" => {
           params match {
             case p: Map[String, String] => {
-              guideKeyword(title, path, p)
+              Ok(guideKeyword(title, path, p))
             }
           }
         }
         case "organisation" => {
           params match {
             case p: Map[String, String] => {
-              guideOrganization(title, path, p)
+              Ok(guideOrganization(title, path, p))
             }
           }
         }
@@ -105,7 +106,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
           params match {
             case p: Map[String, String] => {
               for((key, content) <- p) {
-                guideMarkdown(title, path, content)
+                Ok(guideMarkdown(title, path, content))
               }
             }
           }
