@@ -55,7 +55,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   def home() = {
     layoutRetrieval("places")
   }
-  def layoutRetrieval(key: String = "") = {
+  def layoutRetrieval(key: String) = {
     val template = DB.withConnection { implicit connection =>
         SQL(
           """
@@ -148,8 +148,8 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     }.apply(request)
   }
 
-  def guideMarkdown(title: String, path: String, content: String) = Action { implicit userDetails => implicit request =>
-    p.guides.markdown(title, path, content)
+  def guideMarkdown(title: String, path: String, content: String) = userProfileAction { implicit userOpt => implicit request =>
+    Ok(p.guides.markdown(title, path, content))
   }
 
 }
