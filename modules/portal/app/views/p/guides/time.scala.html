@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, lang: Lang)
+@(title: String)(implicit request: RequestHeader, lang: Lang)
 
 @js = {
 	
@@ -108,7 +108,7 @@
 	</script>
 }
 
-@p.layout.guideLayout("Time browsing", "creationTime", scripts = js) {
+@p.layout.guideLayout(title, title, scripts = js) {
 	<article>
 		<header>
 			<form role="form">
