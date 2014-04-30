@@ -60,83 +60,96 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         SQL(
           """
             SELECT * FROM research_guide_page 
-            WHERE name_research_guide_page = {id}
+            WHERE path_research_guide_page = {id}
             LIMIT 1
           """
         ).on('id -> key).apply().head
       }
 
-   guideLayout(key, template[String]("layout_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+   guideLayout(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("layout_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
  }
 
-  def guideLayout(key:String, layout: String, params: Any) = {
+  def guideLayout(title:String, path: String, layout: String, params: Any) = {
       /* Will be replaced by MySQL stuff */
       /* Function mapping */
       layout match {
         case "person" => {
           params match {
             case p: Map[String, String] => {
-              guideAuthority(key, p)
+              guideAuthority(title, path, p)
             }
           }
         }
         case "map" => {
           params match {
             case p: Map[String, String] => {
-              guideMap(key, p)
+              guideMap(title, path, p)
             }
           }
         }
         case "keyword" => {
           params match {
             case p: Map[String, String] => {
-              guideKeyword(key, p)
+              guideKeyword(title, path, p)
             }
           }
         }
         case "organisation" => {
           params match {
             case p: Map[String, String] => {
-              guideOrganization(key, p)
+              guideOrganization(title, path, p)
+            }
+          }
+        }
+        case "md" => {
+          params match {
+            case p: Map[String, String] => {
+              for((key, content) <- p) {
+                guideMarkdown(title, path, content)
+              }
             }
           }
         }
       }
   }
 
-  def guideAuthority(title: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideAuthority(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[HistoricalAgent](params, defaultParams = Some(SearchParams(entities=List(EntityType.HistoricalAgent)))
       ) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.person(title, page, params, facets, portalRoutes.browseHistoricalAgents()))
+      Ok(p.guides.person(title, path, page, params, facets, portalRoutes.browseHistoricalAgents()))
     }.apply(request)
   }
 
-  def guideKeyword(title: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideKeyword(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, page, params, facets, portalRoutes.browseConcepts(),
+      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(),
         userDetails.watchedItems))
     }.apply(request)
   }
 
-  def guideMap(title: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideMap(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.places(title, page, params, facets, portalRoutes.browseConcepts(),
+      Ok(p.guides.places(title, path, page, params, facets, portalRoutes.browseConcepts(),
         userDetails.watchedItems))
     }.apply(request)
   }
 
-  def guideOrganization(title: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideOrganization(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, page, params, facets, portalRoutes.browseConcepts(),
+      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(),
         userDetails.watchedItems))
     }.apply(request)
+  }
+
+  def guideMarkdown(title: String, path: String, content: String) = Action { implicit userDetails => implicit request =>
+    p.guides.markdown(title, path, content)
   }
 
 }
