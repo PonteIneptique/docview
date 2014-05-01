@@ -77,37 +77,38 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
  }
 
   def guideLayout(key: String) = {
-      val template = DB.withConnection { implicit connection =>
-        SQL(
-          """
-            SELECT * FROM research_guide_page 
-            WHERE path_research_guide_page = {id}
-            LIMIT 1
-          """
-        ).on('id -> key).apply().head
-      }
+    
+    // Make a class to hold our template data
+    case class TemplateData(layout: String, name: String, path: String, cypher: String)
 
-      /* Function mapping */
-      template[String]("layout_research_guide_page") match {
-        case "person" => {
-          guideAuthority(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
-        }
-        case "map" => {
-          guideMap(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
-        }
-        case "keyword" => {
-          guideKeyword(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
-        }
-        case "organisation" => {
-          guideOrganization(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
-        }
-        case "md" => {
-          guideMarkdown(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), template[String]("cypher_research_guide_page"))
-        }
-        case "404" | _ => {
-          guideMarkdown("404", "error", "#Error 404 \n Page unknown")
-        }
+    val template: Option[TemplateData] = DB.withConnection { implicit connection =>
+      SQL(
+        """
+          SELECT * FROM research_guide_page 
+          WHERE path_research_guide_page = {id}
+          LIMIT 1
+        """
+      ).on('id -> key).apply().headOption.map { row =>
+        TemplateData(
+          row[String]("layout_research_guide_page"),
+          row[String]("name_research_guide_page"),
+          row[String]("path_research_guide_page"),
+          row[String]("cypher_research_guide_page")
+        )
       }
+    }
+
+    /* Function mapping */
+    template match {
+      case Some(t) if t.layout == "person" => guideAuthority(t.name, t.path, Map("holderId" -> t.cypher))
+      case Some(t) if t.layout == "map" => guideMap(t.name, t.path, Map("holderId" -> t.cypher))
+      case Some(t) if t.layout == "keyword" => guideKeyword(t.name, t.path, Map("holderId" -> t.cypher))
+      case Some(t) if t.layout == "organisation" => guideOrganization(t.name, t.path, Map("holderId" -> t.cypher))
+      case Some(t) if t.layout == "md" => guideMarkdown(t.name, t.path, t.cypher)
+      case _ => Action { implicit request =>
+        NotFound(views.html.errors.pageNotFound())
+      }
+    }
   }
 
   def guideAuthority(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
