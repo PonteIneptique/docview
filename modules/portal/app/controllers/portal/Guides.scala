@@ -52,7 +52,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
 
-  val menu:List[(String, List[(String, String)])] = DB.withConnection { implicit connection =>
+  val menu:List[(String, List[String])] = DB.withConnection { implicit connection =>
     SQL(
       """
         SELECT 
