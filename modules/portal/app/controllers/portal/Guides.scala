@@ -52,12 +52,12 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
   /* Guides */
-  def home() = userProfileAction { implicit userOpt => implicit request =>
-   Ok(guideLayout("places"))
+  def home() = {
+    guideLayout("places")
   }
 
-  def layoutRetrieval(key: String) = userProfileAction { implicit userOpt => implicit request =>
-    Ok(guideLayout(key))
+  def layoutRetrieval(key: String) = { 
+    guideLayout(key)
  }
 
   def guideLayout(key: String) = {
@@ -75,19 +75,19 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       /* Function mapping */
       template[String]("layout_research_guide_page") match {
         case "person" => {
-         guideAuthority(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+          guideAuthority(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "map" => {
-          guideMap(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+          guideMap(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "keyword" => {
-         guideKeyword(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+          guideKeyword(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "organisation" => {
-          guideOrganization(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
+          guideOrganization(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "md" => {
-          guideMarkdown(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("cypher_research_guide_page"))
+          guideMarkdown(template[String]("name_research_guide_page"), template[String]("path_research_guide_page"), template[String]("cypher_research_guide_page"))
         }
         case "404" | _ => {
           guideMarkdown("404", "error", "#Error 404 \n Page unknown")
@@ -100,6 +100,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       ) {
         page => params => facets => _ => _ =>
       Ok(p.guides.person(title, path, page, params, facets, portalRoutes.browseHistoricalAgents()))
+
     }.apply(request)
   }
 
@@ -107,8 +108,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(),
-        userDetails.watchedItems))
+      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
     }.apply(request)
   }
 
@@ -116,8 +116,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.places(title, path, page, params, facets, portalRoutes.browseConcepts(),
-        userDetails.watchedItems))
+      Ok(p.guides.places(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
     }.apply(request)
   }
 
@@ -125,8 +124,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(),
-        userDetails.watchedItems))
+      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
     }.apply(request)
   }
 
