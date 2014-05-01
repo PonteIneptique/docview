@@ -52,7 +52,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
 
-  val menu:List[(String, List[String])] = DB.withConnection { implicit connection =>
+  val menu:List[(String, List[(String, String)])] = DB.withConnection { implicit connection =>
     SQL(
       """
         SELECT 
@@ -63,7 +63,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         WHERE id_research_guide = {id}
       """
     ).on('id -> 1).apply().map { row =>
-      row[String]("menu_research_guide_page") -> List(row[String]("path_research_guide_page"), row[String]("name_research_guide_page"))
+      row[String]("menu_research_guide_page") -> List(row[String]("path_research_guide_page") -> row[String]("name_research_guide_page"))
     }.toList
   }
 
