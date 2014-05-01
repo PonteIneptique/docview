@@ -53,11 +53,16 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
 
   /* Guides */
   def home() = userProfileAction { implicit userOpt => implicit request =>
-   Ok(layoutRetrieval("places"))
+   Ok(guideLayout("places"))
   }
 
   def layoutRetrieval(key: String) = userProfileAction { implicit userOpt => implicit request =>
-    val template = DB.withConnection { implicit connection =>
+    Ok(guideLayout(key))
+ }
+
+  def guideLayout(key: String) = {
+      /* Will be replaced by MySQL stuff */
+      val template = DB.withConnection { implicit connection =>
         SQL(
           """
             SELECT * FROM research_guide_page 
@@ -67,49 +72,25 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         ).on('id -> key).apply().head
       }
 
-   Ok(guideLayout(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("layout_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page"))))
- }
-
-  def guideLayout(title:String, path: String, layout: String, params: Any) =  userProfileAction { implicit userOpt => implicit request =>
-      /* Will be replaced by MySQL stuff */
       /* Function mapping */
-      layout match {
+      template[String]("layout_research_guide_page") match {
         case "person" => {
-          params match {
-            case p: Map[String, String] => {
-              Ok(guideAuthority(title, path, p))
-            }
-          }
+         guideAuthority(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "map" => {
-          params match {
-            case p: Map[String, String] => {
-              Ok(guideMap(title, path, p))
-            }
-          }
+          guideMap(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "keyword" => {
-          params match {
-            case p: Map[String, String] => {
-              Ok(guideKeyword(title, path, p))
-            }
-          }
+         guideKeyword(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "organisation" => {
-          params match {
-            case p: Map[String, String] => {
-              Ok(guideOrganization(title, path, p))
-            }
-          }
+          guideOrganization(template[String]("name_research_guide"), template[String]("path_research_guide_page"), Map("holderId" -> template[String]("cypher_research_guide_page")))
         }
         case "md" => {
-          params match {
-            case p: Map[String, String] => {
-              for((key, content) <- p) {
-                Ok(guideMarkdown(title, path, content))
-              }
-            }
-          }
+          guideMarkdown(template[String]("name_research_guide"), template[String]("path_research_guide_page"), template[String]("cypher_research_guide_page"))
+        }
+        case "404" | _ => {
+          guideMarkdown("404", "error", "#Error 404 \n Page unknown")
         }
       }
   }
