@@ -51,6 +51,22 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     EntityType.Country)
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
+
+  val menu:List[(String, List[(String, String)])] = DB.withConnection { implicit connection =>
+    SQL(
+      """
+        SELECT 
+          name_research_guide_page, 
+          path_research_guide_page, 
+          menu_research_guide_page
+        FROM research_guide_page 
+        WHERE id_research_guide = {id}
+      """
+    ).on('id -> 1).apply().map { row =>
+      row[String]("menu_research_guide_page") -> List(row[String]("path_research_guide_page"), row[String]("name_research_guide_page"))
+    }.toList
+  }
+
   /* Guides */
   def home() = {
     guideLayout("places")
@@ -61,7 +77,6 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
  }
 
   def guideLayout(key: String) = {
-      /* Will be replaced by MySQL stuff */
       val template = DB.withConnection { implicit connection =>
         SQL(
           """
@@ -129,7 +144,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   }
 
   def guideMarkdown(title: String, path: String, content: String) = userProfileAction { implicit userOpt => implicit request =>
-    Ok(p.guides.markdown(title, path, content))
+    Ok(p.guides.markdown(title, path, content, menu))
   }
 
 }
