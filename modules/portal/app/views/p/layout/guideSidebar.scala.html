@@ -1,4 +1,4 @@
-@()(implicit request: RequestHeader, lang: Lang)
+@(location: String, menu: List[(String, List[(String, String)])])(implicit request: RequestHeader, lang: Lang)
 <div class="well">
 	<article>
 		Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean fringilla augue lacus, nec molestie sem dapibus a. Maecenas sollicitudin ac ipsum at commodo. Curabitur varius ultricies purus, eget imperdiet nisl fringilla ac. In hendrerit libero turpis, vitae pretium quam sagittis vitae. Ut elementum diam ac adipiscing volutpat.
@@ -8,11 +8,14 @@
 
 <div class="well">
 	<ul class="nav nav-pills nav-stacked">
-		<li><a href="./about">About the Guide</a></li>
-		<li><a href="#">History of Terezin</a></li>
-		<li><a href="#">History of Terezin collections</a></li>
-		<li><a href="#">Terezin collections today</a></li>
-		<li><a href="#">Search on Terezing prisoners</a></li>
+
+		@for((menuPos, menuInfo) <- menu) {
+			@if(menuPos == "side") {
+				@for((menuPath, menuName) <- menuInfo) {
+					<li><a @if(location == menuPath) { class="active" } href="./@menuPath">@menuName</a></li>
+				}
+			}
+		}
 	</ul>
 </div>
 

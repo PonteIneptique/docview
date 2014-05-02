@@ -1,4 +1,4 @@
-@(title: String, location: String = "places", scripts: Html = Html(""), styles: Html = Html(""))(content: Html)(implicit request: RequestHeader, lang: Lang)
+@(title: String, location: String = "places", menu: List[(String, List[(String, String)])], scripts: Html = Html(""), styles: Html = Html(""))(content: Html)(implicit request: RequestHeader, lang: Lang)
 
 <!DOCTYPE html>
 
@@ -12,7 +12,7 @@
     <body>
 		<header id="top">
 			<div class="container">
-				@guideHeader(location)
+				@guideHeader(location, menu)
 			</div>
 			<div id="page-title" style="background-color:#360f4f;">
 				<div class="container">
@@ -33,7 +33,7 @@
 					@content
 				</div>
 				<div class="col-md-4" id="right-bar">
-					@guideSidebar()
+					@guideSidebar(location, menu)
 				</div>
 			</div>
 		</div>

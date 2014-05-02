@@ -115,7 +115,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[HistoricalAgent](params, defaultParams = Some(SearchParams(entities=List(EntityType.HistoricalAgent)))
       ) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.person(title, path, page, params, facets, portalRoutes.browseHistoricalAgents()))
+      Ok(p.guides.person(title, path, page, params, menu))
 
     }.apply(request)
   }
@@ -124,7 +124,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
+      Ok(p.guides.keywords(title, path, page, params, menu))
     }.apply(request)
   }
 
@@ -132,7 +132,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.places(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
+      Ok(p.guides.places(title, path, page, params, menu))
     }.apply(request)
   }
 
@@ -140,7 +140,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, facets, portalRoutes.browseConcepts(), userDetails.watchedItems))
+      Ok(p.guides.keywords(title, path, page, params, menu))
     }.apply(request)
   }
 

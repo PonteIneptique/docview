@@ -1,13 +1,7 @@
 @(title: String, path: String, content: String, menu: List[(String, List[(String, String)])])(implicit userOpt: Option[UserProfile], request: RequestHeader, prefs: utils.SessionPrefs, globalConfig: global.GlobalConfig, lang: Lang, flash: Flash)
 
 
-@p.layout.guideLayout(title, path) {
-	@for((menuPath, menuInfo) <- menu) {
-		@menuPath
-		@for((menuPath, menuName) <- menuInfo) {
-			<a href="@menuPath">@menuName</a>
-		}
-	}
+@p.layout.guideLayout(title, path, menu) {
 	<article>
 		@Html(views.Helpers.renderMarkdown(content))
 	</article>
