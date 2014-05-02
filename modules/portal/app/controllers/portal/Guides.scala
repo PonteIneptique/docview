@@ -22,6 +22,7 @@ import utils._
 import language.postfixOps
 import play.api.db._
 import play.api.Play.current
+import models.GuidesData
 
 import anorm._
 import anorm.SqlParser._
@@ -67,16 +68,36 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     }.toList
   }
 
-  /* Guides */
-  def home() = {
-    guideLayout("places")
+  def listGuides() = userProfileAction { implicit userOpt => implicit request => 
+
+    val guides: List[GuidesData] = DB.withConnection { implicit connection =>
+      SQL(
+        """
+          SELECT * FROM research_guide
+        """
+      ).apply().map { row =>
+        GuidesData(
+          row[Int]("id_research_guide"),
+          row[String]("name_research_guide"),
+          row[String]("path_research_guide"),
+          row[Option[String]]("picture_research_guide"),
+          row[Option[String]]("description_research_guide")
+        )
+      }.toList
+    }
+    Ok(p.guides.guidesList(guides))
   }
 
-  def layoutRetrieval(key: String) = { 
-    guideLayout(key)
+  /* Guides */
+  def home(guide: String) = {
+    guideLayout(guide, "places")
+  }
+
+  def layoutRetrieval(guide:String, key: String) = { 
+    guideLayout(guide, key)
  }
 
-  def guideLayout(key: String) = {
+  def guideLayout(guide:String, key: String) = {
     
     // Make a class to hold our template data
     case class TemplateData(layout: String, name: String, path: String, cypher: String)
@@ -84,11 +105,21 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     val template: Option[TemplateData] = DB.withConnection { implicit connection =>
       SQL(
         """
-          SELECT * FROM research_guide_page 
-          WHERE path_research_guide_page = {id}
+          SELECT 
+            rgp.layout_research_guide_page,
+            rgp.name_research_guide_page,
+            rgp.path_research_guide_page,
+            rgp.cypher_research_guide_page
+          FROM 
+            research_guide_page rgp,
+            research_guide rg
+          WHERE 
+            rgp.path_research_guide_page = {id} AND 
+            rgp.id_research_guide = rg.id_research_guide AND
+            rg.path_research_guide = {guide}
           LIMIT 1
         """
-      ).on('id -> key).apply().headOption.map { row =>
+      ).on('id -> key, 'guide -> guide).apply().headOption.map { row =>
         TemplateData(
           row[String]("layout_research_guide_page"),
           row[String]("name_research_guide_page"),
