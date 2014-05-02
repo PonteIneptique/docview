@@ -23,6 +23,7 @@ import language.postfixOps
 import play.api.db._
 import play.api.Play.current
 import models.GuidesData
+import models.GuidesPage
 
 import anorm._
 import anorm.SqlParser._
@@ -53,18 +54,24 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   private val defaultSearchParams = SearchParams(entities = defaultSearchTypes, sort = Some(SearchOrder.Score))
 
 
-  val menu:List[(String, List[(String, String)])] = DB.withConnection { implicit connection =>
+  def menu(id: Int):List[GuidesPage] = DB.withConnection { implicit connection =>
     SQL(
       """
         SELECT 
-          name_research_guide_page, 
-          path_research_guide_page, 
-          menu_research_guide_page
+          *
         FROM research_guide_page 
         WHERE id_research_guide = {id}
       """
-    ).on('id -> 1).apply().map { row =>
-      row[String]("menu_research_guide_page") -> List(row[String]("path_research_guide_page") -> row[String]("name_research_guide_page"))
+    ).on('id -> id).apply().map { row =>
+      GuidesPage(
+        row[Int]("id_research_guide_page"),
+        row[String]("layout_research_guide_page"),
+        row[String]("name_research_guide_page"),
+        row[String]("path_research_guide_page"),
+        row[String]("menu_research_guide_page"),
+        row[String]("cypher_research_guide_page"),
+        row[Int]("id_research_guide")
+      )
     }.toList
   }
 
@@ -95,21 +102,44 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
 
   def layoutRetrieval(guide:String, key: String) = { 
     guideLayout(guide, key)
- }
+  }
+
+  def guide(guideId: Int): GuidesData = DB.withConnection { implicit connection =>
+    SQL(
+      """
+        SELECT 
+          * 
+        FROM 
+          research_guide
+        WHERE 
+          id_research_guide = {id} 
+        LIMIT 1
+      """
+    ).on('id -> guideId).apply().headOption.map { row =>
+      GuidesData(
+        row[Int]("id_research_guide"),
+        row[String]("name_research_guide"),
+        row[String]("path_research_guide"),
+        row[Option[String]]("picture_research_guide"),
+        row[Option[String]]("description_research_guide")
+      )
+    }.head
+  }
 
   def guideLayout(guide:String, key: String) = {
-    
-    // Make a class to hold our template data
-    case class TemplateData(layout: String, name: String, path: String, cypher: String)
 
-    val template: Option[TemplateData] = DB.withConnection { implicit connection =>
+    val template: Option[GuidesPage] = DB.withConnection { implicit connection =>
+
       SQL(
         """
           SELECT 
+            rgp.id_research_guide_page,
             rgp.layout_research_guide_page,
             rgp.name_research_guide_page,
             rgp.path_research_guide_page,
-            rgp.cypher_research_guide_page
+            rgp.menu_research_guide_page,
+            rgp.cypher_research_guide_page,
+            rg.id_research_guide
           FROM 
             research_guide_page rgp,
             research_guide rg
@@ -120,63 +150,66 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
           LIMIT 1
         """
       ).on('id -> key, 'guide -> guide).apply().headOption.map { row =>
-        TemplateData(
+        GuidesPage(
+          row[Int]("id_research_guide_page"),
           row[String]("layout_research_guide_page"),
           row[String]("name_research_guide_page"),
           row[String]("path_research_guide_page"),
-          row[String]("cypher_research_guide_page")
+          row[String]("menu_research_guide_page"),
+          row[String]("cypher_research_guide_page"),
+          row[Int]("id_research_guide")
         )
       }
     }
 
     /* Function mapping */
     template match {
-      case Some(t) if t.layout == "person" => guideAuthority(t.name, t.path, Map("holderId" -> t.cypher))
-      case Some(t) if t.layout == "map" => guideMap(t.name, t.path, Map("holderId" -> t.cypher))
-      case Some(t) if t.layout == "keyword" => guideKeyword(t.name, t.path, Map("holderId" -> t.cypher))
-      case Some(t) if t.layout == "organisation" => guideOrganization(t.name, t.path, Map("holderId" -> t.cypher))
-      case Some(t) if t.layout == "md" => guideMarkdown(t.name, t.path, t.cypher)
+      case Some(t) if t.layout == "person" => guideAuthority(t, Map("holderId" -> t.content))
+      case Some(t) if t.layout == "map" => guideMap(t, Map("holderId" -> t.content))
+      case Some(t) if t.layout == "keyword" => guideKeyword(t, Map("holderId" -> t.content))
+      case Some(t) if t.layout == "organisation" => guideOrganization(t, Map("holderId" -> t.content))
+      case Some(t) if t.layout == "md" => guideMarkdown(t, t.content)
       case _ => Action { implicit request =>
         NotFound(views.html.errors.pageNotFound())
       }
     }
   }
 
-  def guideAuthority(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideAuthority(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[HistoricalAgent](params, defaultParams = Some(SearchParams(entities=List(EntityType.HistoricalAgent)))
       ) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.person(title, path, page, params, menu))
+      Ok(p.guides.person(template -> (guide(template.parent) -> menu(template.parent)), page, params))
 
     }.apply(request)
   }
 
-  def guideKeyword(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideKeyword(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, menu))
+      Ok(p.guides.keywords(template -> (guide(template.parent) -> menu(template.parent)), page, params))
     }.apply(request)
   }
 
-  def guideMap(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideMap(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.places(title, path, page, params, menu))
+      Ok(p.guides.places(template -> (guide(template.parent) -> menu(template.parent)), page, params))
     }.apply(request)
   }
 
-  def guideOrganization(title: String, path: String, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
+  def guideOrganization(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
       entityFacets = conceptFacets) {
         page => params => facets => _ => _ =>
-      Ok(p.guides.keywords(title, path, page, params, menu))
+      Ok(p.guides.keywords(template -> (guide(template.parent) -> menu(template.parent)), page, params))
     }.apply(request)
   }
 
-  def guideMarkdown(title: String, path: String, content: String) = userProfileAction { implicit userOpt => implicit request =>
-    Ok(p.guides.markdown(title, path, content, menu))
+  def guideMarkdown(template: GuidesPage, content: String) = userProfileAction { implicit userOpt => implicit request =>
+    Ok(p.guides.markdown(template -> (guide(template.parent) -> menu(template.parent)), content))
   }
 
 }
