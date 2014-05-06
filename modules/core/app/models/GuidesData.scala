@@ -18,6 +18,13 @@ case class GuidesData(
 )
 
 object GuidesData {
+  val PREFIX = "guides"
+  val OBJECTID = "objectId"
+  val PATH = "path"
+  val NAME = "name"
+  val DESCRIPTION = "description"
+  val PICTURE = "picture"
+
   implicit val form = Form(
     mapping(
       "objectId" -> number,

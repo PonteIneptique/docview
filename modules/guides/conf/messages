@@ -1,0 +1,13 @@
+guides.objectId=Numeric Identifier
+guides.objectId.description=Automatic identifier
+guides.path=Path (url)
+guides.path.description=Will be available through /guides/path
+guides.name=Name
+guides.name.description=Name of the guide
+guides.description=Description
+guides.description.description=Description of the guide
+guides.picture=Picture
+guides.picture.description=Path to the picture of the guide
+
+guides.edit=Edit
+guides.create=Create

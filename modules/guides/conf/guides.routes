@@ -3,13 +3,6 @@
 # ~~~~
 
 # Home page
-GET     /			@controllers.guides.Home.places
-GET     /timeline		@controllers.guides.Home.timeBrowse
-GET     /keywords		@controllers.guides.Home.keywordBrowse
-GET     /people			@controllers.guides.Home.personBrowse
-GET     /results		@controllers.guides.Home.resultsBrowse
-GET     /item			@controllers.guides.Home.itemShow
-GET     /organisation	@controllers.guides.Home.organizationsShow
-
-# Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file	controllers.guides.Assets.at(path="/public", file)
+GET     /			@controllers.guides.GuidesAdmin.listGuides
+GET     /edit/:path	@controllers.guides.GuidesAdmin.edit(path: String)
+GET     /create	@controllers.guides.GuidesAdmin.create()
