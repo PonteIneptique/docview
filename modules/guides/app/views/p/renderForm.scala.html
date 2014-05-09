@@ -1,0 +1,13 @@
+@(item: Option[GuidesPage], f: Form[models.GuidesPage])
+
+@implicitField = @{ views.html.helper.FieldConstructor(formHelpers.fieldTemplate.f) }
+
+@defining(GuidesPage.PREFIX) { implicit fieldPrefix =>
+    @formHelpers.lineInput(f(""), GuidesPage.OBJECTID)
+    @formHelpers.lineInput(f(""), GuidesPage.NAME)
+    @formHelpers.lineInput(f(""), GuidesPage.PATH)
+    @formHelpers.textInput(f(""), GuidesPage.POSITION)
+    @formHelpers.lineInput(f(""), GuidesPage.LAYOUT)
+    @formHelpers.textInput(f(""), GuidesPage.CONTENT)
+    @formHelpers.textInput(f(""), GuidesPage.PARENT)
+}

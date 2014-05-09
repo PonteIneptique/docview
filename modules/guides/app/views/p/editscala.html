@@ -1,0 +1,11 @@
+@(f: Form[models.GuidesPage], guides: List[GuidesData], action: Call)(
+implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.GlobalConfig, lang: Lang, flash: Flash, token: play.filters.csrf.CSRF.Token)
+
+@guidesAdminLayout(Messages("guides.create"), guides) {
+	@helper.form(action = action, 'class -> "entity-form form-horizontal") {
+        @formHelpers.csrfToken()
+    	@renderForm(None, f)
+
+        @formHelpers.submitButtonWithLogMessageInput(Messages("guides.create"))
+	}
+}

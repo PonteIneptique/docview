@@ -42,37 +42,102 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 			)
 		}.toList
 	}
+
+	def pages(path: String): List[GuidesPage] = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+			SELECT 
+				rgp.*
+			FROM 
+				research_guide_page rgp,
+				research_guide rg 
+			WHERE 
+				rg.id_research_guide = rgp.id_research_guide AND
+				rg.path_research_guide = {path}
+			"""
+		).on('path -> path).apply().map { row =>
+			GuidesPage(
+				row[Int]("id_research_guide_page"),
+				row[String]("layout_research_guide_page"),
+				row[String]("name_research_guide_page"),
+				row[String]("path_research_guide_page"),
+				row[String]("menu_research_guide_page"),
+				row[String]("cypher_research_guide_page"),
+				row[Int]("id_research_guide")
+			)
+		}.toList
+	}
+
+	def g(path: String): GuidesData = DB.withConnection { implicit connection =>
+		SQL(
+		  """
+		    SELECT 
+		      * 
+		    FROM 
+		      research_guide
+		    WHERE 
+		      path_research_guide = {guidePath} 
+		    LIMIT 1
+		  """
+		).on('guidePath -> path).apply().headOption.map { row =>
+		  GuidesData(
+		    row[Int]("id_research_guide"),
+		    row[String]("name_research_guide"),
+		    row[String]("path_research_guide"),
+		    row[Option[String]]("picture_research_guide"),
+		    row[Option[String]]("description_research_guide")
+		  )
+		}.head
+	}
+
+	def p(gPath: String, path: String): GuidesPage = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+			SELECT 
+				rgp.*
+			FROM 
+				research_guide_page rgp,
+				research_guide rg 
+			WHERE 
+				rg.id_research_guide = rgp.id_research_guide AND
+				rg.path_research_guide = {gPath} AND
+				rgp.path_research_guide_page = {path}
+			"""
+		).on('gPath -> gPath, 'path -> path).apply().map { row =>
+			GuidesPage(
+				row[Int]("id_research_guide_page"),
+				row[String]("layout_research_guide_page"),
+				row[String]("name_research_guide_page"),
+				row[String]("path_research_guide_page"),
+				row[String]("menu_research_guide_page"),
+				row[String]("cypher_research_guide_page"),
+				row[Int]("id_research_guide")
+			)
+		}.head
+	}
   
 	def listGuides() = userProfileAction { implicit userOpt => implicit request => 
 		Ok(views.html.list(guides))
 	}
 
-	def edit(guidePath: String) = userProfileAction { implicit userOpt => implicit request => 
-		val g: GuidesData = DB.withConnection { implicit connection =>
-			SQL(
-			  """
-			    SELECT 
-			      * 
-			    FROM 
-			      research_guide
-			    WHERE 
-			      path_research_guide = {guidePath} 
-			    LIMIT 1
-			  """
-			).on('guidePath -> guidePath).apply().headOption.map { row =>
-			  GuidesData(
-			    row[Int]("id_research_guide"),
-			    row[String]("name_research_guide"),
-			    row[String]("path_research_guide"),
-			    row[Option[String]]("picture_research_guide"),
-			    row[Option[String]]("description_research_guide")
-			  )
-			}.head
-		}
-		Ok(views.html.edit(formGuide.fill(g), guides, guidesRoutes.edit(guidePath)))
+	def edit(path: String) = userProfileAction { implicit userOpt => implicit request => 
+
+		Ok(views.html.edit(formGuide.fill(g(path)), guides, guidesRoutes.edit(path)))
 	}
 
 	def create() = userProfileAction { implicit userOpt => implicit request => 
 		Ok(views.html.create(formGuide, guides, guidesRoutes.create()))
+	}
+
+	/*
+	*	Pages routes
+	*/
+
+	def listPages(path: String) = userProfileAction { implicit userOpt => implicit request =>
+		Ok(views.html.p.list(pages(path), g(path), guides))
+	}
+
+	def editPages(gPath: String, path: String) = userProfileAction { implicit userOpt => implicit request =>
+		Ok(views.html.p.edit(formPage.fill(p(gPath, path)), g(gPath), pages(gPath), guides, guidesRoutes.editPages(gPath, path)))
 	}
 }

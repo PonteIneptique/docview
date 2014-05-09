@@ -21,6 +21,17 @@ case class GuidesPage(
 )
 
 object GuidesPage {
+
+  val PREFIX = "guides.page"
+  val OBJECTID = "objectId"
+  val PATH = "path"
+  val NAME = "name"
+  val LAYOUT = "layout"
+  val POSITION = "position"
+  val CONTENT = "content"
+  val PARENT = "parent"
+  
+
   implicit val form = Form(
     mapping(
       "objectId" -> number,

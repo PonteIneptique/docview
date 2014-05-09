@@ -4,5 +4,11 @@
 
 # Home page
 GET     /			@controllers.guides.GuidesAdmin.listGuides
-GET     /edit/:path	@controllers.guides.GuidesAdmin.edit(path: String)
 GET     /create	@controllers.guides.GuidesAdmin.create()
+
+#Guides directed
+GET     /:path	@controllers.guides.GuidesAdmin.listPages(path: String)
+GET     /:path/edit	@controllers.guides.GuidesAdmin.edit(path: String)
+
+#Guides Pages
+GET		/:gPath/:path	@controllers.guides.GuidesAdmin.editPages(gPath: String, path: String)
