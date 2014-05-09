@@ -5,7 +5,7 @@
 	<ul class="nav nav-pills nav-stacked">
 		@for(guide <- guides) {
 			<li>
-				<a href="@controllers.guides.routes.GuidesAdmin.edit(guide.path)">@guide.name</a>
+				<a href="@controllers.guides.routes.GuidesAdmin.listPages(guide.path)">@guide.name</a>
 			</li>
 		}
 		<li>

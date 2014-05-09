@@ -12,3 +12,4 @@ GET     /:path/edit	@controllers.guides.GuidesAdmin.edit(path: String)
 
 #Guides Pages
 GET		/:gPath/:path	@controllers.guides.GuidesAdmin.editPages(gPath: String, path: String)
+GET		/:gPath/create	@controllers.guides.GuidesAdmin.createPages(gPath: String)

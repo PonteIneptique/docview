@@ -138,6 +138,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 	}
 
 	def editPages(gPath: String, path: String) = userProfileAction { implicit userOpt => implicit request =>
-		Ok(views.html.p.edit(formPage.fill(p(gPath, path)), g(gPath), pages(gPath), guides, guidesRoutes.editPages(gPath, path)))
+		Ok(views.html.p.edit(formPage.fill(p(gPath, path)), p(gPath, path), g(gPath), pages(gPath), guides, guidesRoutes.editPages(gPath, path)))
+	}
+	def createPages(gPath: String) = userProfileAction { implicit userOpt => implicit request =>
+		Ok(views.html.p.create(formPage, g(gPath), pages(gPath), guides, guidesRoutes.createPages(gPath)))
 	}
 }
