@@ -27,7 +27,22 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 	private val formPage = models.GuidesPage.form
 	private final val guidesRoutes = controllers.guides.routes.GuidesAdmin
 
-	lazy val guides: List[GuidesData] = DB.withConnection { implicit connection =>
+/*
+ *	Create an empty instance of GuidesPage
+ *
+ *
+ */
+def emptyPage(guideId: Option[Int]): GuidesPage = {
+	GuidesPage(None, "", "", "", "", "", guideId.getOrElse(0))
+}
+/**
+ * List of guides and functions to retrieve guides an pages
+ */
+
+ 	/*
+ 	*	Returns a list of guides
+ 	*/
+	def guides: List[GuidesData] = DB.withConnection { implicit connection =>
 		SQL(
 		"""
 		SELECT * FROM research_guide
@@ -43,10 +58,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		}.toList
 	}
 
-	def emptyPage(guideId: Option[Int]): GuidesPage = {
-		GuidesPage(None, "", "", "", "", "", guideId.getOrElse(0))
-	}
-
+	/*
+	*	Return a list of pages for a given guide
+	*/
 	def pages(path: String): List[GuidesPage] = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -72,6 +86,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		}.toList
 	}
 
+	/*
+	*	Return one guide given its path
+	*/
 	def g(path: String): Option[GuidesData] = DB.withConnection { implicit connection =>
 		SQL(
 		  """
@@ -94,6 +111,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		}
 	}
 
+	/*
+	*	Return one page given its path and its guide's path
+	*/
 	def p(gPath: String, path: String): Option[GuidesPage] = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -120,6 +140,12 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		}
 	}
 
+/*
+ *	Function related to SQL management of data
+*/
+	/*
+	*	Create a new guide
+	*/
 	def saveGuide(name: String, path: String, picture: Option[String], description: Option[String]): Option[Long] = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -132,8 +158,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		).on('n -> name, 'p -> path, 'pi -> picture, 'de -> description).executeInsert()
 	}
 
-
-
+	/*
+	*	Edit a guide
+	*/
 	def updateGuide(id:Option[Int], name: String, path: String, picture: Option[String], description: Option[String]): Int = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -151,7 +178,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		).on('n -> name, 'p -> path, 'pi -> picture, 'de -> description, 'i -> id).executeUpdate()
 	}
 
-
+	/*
+	*	Create a new page
+	*/
 	def savePage(layout: String, name: String, path: String, menu: String, cypher: String, parent: Int): Option[Long] = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -172,6 +201,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		).on('l -> layout, 'n -> name, 'p -> path, 'm -> menu, 'c -> cypher, 'parent -> parent).executeInsert()
 	}
 
+	/*
+	*	Edit a page
+	*/
 	def updatePage(id: Option[Int], layout: String, name: String, path: String, menu: String, cypher: String, parent: Int): Int = DB.withConnection { implicit connection =>
 		SQL(
 			"""
@@ -192,6 +224,13 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		).on('l -> layout, 'n -> name, 'p -> path, 'm -> menu, 'c -> cypher, 'parent -> parent, 'id -> id).executeUpdate()
 	}
   
+/*
+*	Routes related action
+*
+*	Guides
+*/
+
+	/* List the available guides */
 	def listGuides() = userProfileAction { implicit userOpt => implicit request => 
 		Ok(views.html.list(guides))
 	}
@@ -242,9 +281,12 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 	    )
 	}
 
-	/*
-	*	Pages routes
-	*/
+
+/*
+*	Routes related action
+*
+*	Pages
+*/
 
 	def listPages(path: String) = userProfileAction { implicit userOpt => implicit request =>
 		g(path) match {
