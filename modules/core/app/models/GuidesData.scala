@@ -10,7 +10,7 @@ import org.joda.time.DateTime
  * @author Thibault Clérice (http://github.com/ponteineptique)
  */
 case class GuidesData(
-  objectId: Int,
+  objectId: Option[Int],
   name: String,
   path: String,
   picture: Option[String],
@@ -27,7 +27,7 @@ object GuidesData {
 
   implicit val form = Form(
     mapping(
-      "objectId" -> number,
+      "objectId" -> optional(number),
       "name" -> text,
       "path" -> text,
       "picture" -> optional(nonEmptyText),

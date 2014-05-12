@@ -64,7 +64,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       """
     ).on('id -> id).apply().map { row =>
       GuidesPage(
-        row[Int]("id_research_guide_page"),
+        row[Option[Int]]("id_research_guide_page"),
         row[String]("layout_research_guide_page"),
         row[String]("name_research_guide_page"),
         row[String]("path_research_guide_page"),
@@ -84,7 +84,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         """
       ).apply().map { row =>
         GuidesData(
-          row[Int]("id_research_guide"),
+          row[Option[Int]]("id_research_guide"),
           row[String]("name_research_guide"),
           row[String]("path_research_guide"),
           row[Option[String]]("picture_research_guide"),
@@ -117,7 +117,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       """
     ).on('id -> guideId).apply().headOption.map { row =>
       GuidesData(
-        row[Int]("id_research_guide"),
+        row[Option[Int]]("id_research_guide"),
         row[String]("name_research_guide"),
         row[String]("path_research_guide"),
         row[Option[String]]("picture_research_guide"),
@@ -151,7 +151,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
         """
       ).on('id -> key, 'guide -> guide).apply().headOption.map { row =>
         GuidesPage(
-          row[Int]("id_research_guide_page"),
+          row[Option[Int]]("id_research_guide_page"),
           row[String]("layout_research_guide_page"),
           row[String]("name_research_guide_page"),
           row[String]("path_research_guide_page"),

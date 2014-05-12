@@ -14,7 +14,7 @@
 	<ul class="nav nav-pills nav-stacked">
 		@for(pa <- pages) {
 			<li>
-				<a href="@controllers.guides.routes.GuidesAdmin.editPages(g.path, pa.path)">@pa.name <span class="badge">@pa.layout</span></a>
+				<a href="@controllers.guides.routes.GuidesAdmin.editPages(g.path, pa.path)">@pa.name <span class="badge">@Messages(GuidesPage.PREFIX + "." + pa.layout)</span></a>
 			</li>
 		}
 		<li>

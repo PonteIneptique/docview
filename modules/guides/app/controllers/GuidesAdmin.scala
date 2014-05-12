@@ -34,13 +34,17 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		"""
 		).apply().map { row =>
 			GuidesData(
-			row[Int]("id_research_guide"),
+			row[Option[Int]]("id_research_guide"),
 			row[String]("name_research_guide"),
 			row[String]("path_research_guide"),
 			row[Option[String]]("picture_research_guide"),
 			row[Option[String]]("description_research_guide")
 			)
 		}.toList
+	}
+
+	def emptyPage(guideId: Option[Int]): GuidesPage = {
+		GuidesPage(None, "", "", "", "", "", guideId.getOrElse(0))
 	}
 
 	def pages(path: String): List[GuidesPage] = DB.withConnection { implicit connection =>
@@ -57,7 +61,7 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 			"""
 		).on('path -> path).apply().map { row =>
 			GuidesPage(
-				row[Int]("id_research_guide_page"),
+				row[Option[Int]]("id_research_guide_page"),
 				row[String]("layout_research_guide_page"),
 				row[String]("name_research_guide_page"),
 				row[String]("path_research_guide_page"),
@@ -68,7 +72,7 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		}.toList
 	}
 
-	def g(path: String): GuidesData = DB.withConnection { implicit connection =>
+	def g(path: String): Option[GuidesData] = DB.withConnection { implicit connection =>
 		SQL(
 		  """
 		    SELECT 
@@ -81,16 +85,16 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 		  """
 		).on('guidePath -> path).apply().headOption.map { row =>
 		  GuidesData(
-		    row[Int]("id_research_guide"),
+		    row[Option[Int]]("id_research_guide"),
 		    row[String]("name_research_guide"),
 		    row[String]("path_research_guide"),
 		    row[Option[String]]("picture_research_guide"),
 		    row[Option[String]]("description_research_guide")
 		  )
-		}.head
+		}
 	}
 
-	def p(gPath: String, path: String): GuidesPage = DB.withConnection { implicit connection =>
+	def p(gPath: String, path: String): Option[GuidesPage] = DB.withConnection { implicit connection =>
 		SQL(
 			"""
 			SELECT 
@@ -103,9 +107,9 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 				rg.path_research_guide = {gPath} AND
 				rgp.path_research_guide_page = {path}
 			"""
-		).on('gPath -> gPath, 'path -> path).apply().map { row =>
+		).on('gPath -> gPath, 'path -> path).apply().headOption.map { row =>
 			GuidesPage(
-				row[Int]("id_research_guide_page"),
+				row[Option[Int]]("id_research_guide_page"),
 				row[String]("layout_research_guide_page"),
 				row[String]("name_research_guide_page"),
 				row[String]("path_research_guide_page"),
@@ -113,7 +117,39 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 				row[String]("cypher_research_guide_page"),
 				row[Int]("id_research_guide")
 			)
-		}.head
+		}
+	}
+
+	def saveGuide(name: String, path: String, picture: Option[String], description: Option[String]): Option[Long] = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+			INSERT INTO
+				research_guide
+			(name_research_guide,path_research_guide, picture_research_guide, description_research_guide)
+			VALUES
+			({n}, {p}, {pi}, {de})
+			"""
+		).on('n -> name, 'p -> path, 'pi -> picture, 'de -> description).executeInsert()
+	}
+
+	def savePage(layout: String, name: String, path: String, menu: String, cypher: String, parent: Int): Option[Long] = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+
+			INSERT INTO
+				research_guide_page
+			(
+				layout_research_guide_page, 
+				name_research_guide_page, 
+				path_research_guide_page, 
+				menu_research_guide_page, 
+				cypher_research_guide_page, 
+				id_research_guide
+			)
+			VALUES
+			({l}, {n}, {p}, {m}, {c}, {parent})
+			"""
+		).on('l -> layout, 'n -> name, 'p -> path, 'm -> menu, 'c -> cypher, 'parent -> parent).executeInsert()
 	}
   
 	def listGuides() = userProfileAction { implicit userOpt => implicit request => 
@@ -121,12 +157,30 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 	}
 
 	def edit(path: String) = userProfileAction { implicit userOpt => implicit request => 
-
-		Ok(views.html.edit(formGuide.fill(g(path)), guides, guidesRoutes.edit(path)))
+		g(path) match {
+			case Some(gui) => Ok(views.html.edit(formGuide.fill(gui), guides, guidesRoutes.edit(path)))
+			case _ => Ok(views.html.list(guides))
+		}
 	}
 
 	def create() = userProfileAction { implicit userOpt => implicit request => 
-		Ok(views.html.create(formGuide, guides, guidesRoutes.create()))
+		Ok(views.html.create(formGuide, guides, guidesRoutes.createPost))
+	}
+
+	def createPost() = userProfileAction { implicit userOpt => implicit request => 
+		formGuide.bindFromRequest.fold(
+	      errorForm => {
+	          Ok(views.html.create(formGuide, guides, guidesRoutes.createPost))
+	      },
+	      {
+	        case GuidesData(_, name, path, picture, description) =>
+	        	saveGuide(name, path, picture, description) match {
+	        		case Some(i) => Ok(views.html.list(guides))
+	        		case _ => Ok(views.html.create(formGuide, guides, guidesRoutes.createPost))
+	        	}
+				
+	      }
+	    )
 	}
 
 	/*
@@ -134,13 +188,55 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 	*/
 
 	def listPages(path: String) = userProfileAction { implicit userOpt => implicit request =>
-		Ok(views.html.p.list(pages(path), g(path), guides))
+		g(path) match {
+			case Some(gui) => Ok(views.html.p.list(pages(path), gui, guides))
+			case _ => Ok(views.html.list(guides))
+		}
 	}
 
 	def editPages(gPath: String, path: String) = userProfileAction { implicit userOpt => implicit request =>
-		Ok(views.html.p.edit(formPage.fill(p(gPath, path)), p(gPath, path), g(gPath), pages(gPath), guides, guidesRoutes.editPages(gPath, path)))
+
+		g(gPath) match {
+			case Some(gui) => {
+				p(gPath, path) match {
+					case Some(pageLayout) => Ok(views.html.p.edit(formPage.fill(pageLayout), pageLayout, gui, pages(gPath), guides, guidesRoutes.editPages(gPath, path)))
+					case _ => Ok(views.html.p.list(pages(path), gui, guides))
+				}
+				
+			}
+			case _ => Ok(views.html.list(guides))
+		}
+		
+
 	}
 	def createPages(gPath: String) = userProfileAction { implicit userOpt => implicit request =>
-		Ok(views.html.p.create(formPage, g(gPath), pages(gPath), guides, guidesRoutes.createPages(gPath)))
+		g(gPath) match {
+			case Some(gui) => Ok(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
+			case _ => Ok(views.html.list(guides))
+		}
+		
+	}
+	def createPagesPost(gPath: String) = userProfileAction { implicit userOpt => implicit request =>
+		g(gPath) match {
+			case Some(gui) => {
+				formPage.bindFromRequest.fold(
+			      errorForm => {
+			          Ok(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
+			      },
+			      {
+			        case GuidesPage(id, layout, name, path, menu, cypher, parent) =>
+			        	savePage(layout, name, path, menu, cypher, gui.objectId.getOrElse(0)) match {
+			        		case Some(i) => Ok(views.html.p.list(pages(path), gui, guides))
+			        		case _ => Ok(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
+			        	}
+						
+			      }
+			    )
+				
+			
+			}
+			case _ => Ok(views.html.list(guides))
+		}
+		
 	}
 }
