@@ -11,9 +11,11 @@ guides.picture.description=Path to the picture of the guide
 
 guides.edit=Edit
 guides.create=Create
+guides.delete=Delete this Guide
 
 guides.page.edit=Edit a page
 guides.page.create=Create a Page
+guides.page.delete=Delete this Page
 
 guides.page.objectId=Numeric Identifier
 guides.page.name=Title

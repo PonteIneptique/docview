@@ -5,13 +5,14 @@ implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.
 	<ol class="breadcrumb">
 		<li><a href="@controllers.guides.routes.GuidesAdmin.listGuides()">Guides</a></li>
 		<li><a class="active" href="@controllers.guides.routes.GuidesAdmin.listPages(g.path)">@g.name</a></li>
-		</li>
 		<li><a class="active" href="@controllers.guides.routes.GuidesAdmin.editPages(g.path, pa.path)">@pa.name</a></li>
-		</li>
 	</ol>
 }
+@sidebar = {
+	<a class="btn btn-danger" href="@controllers.guides.routes.GuidesAdmin.deletePages(g.path, pa.path)">@Messages("guides.page.delete")</a>
+}
 
-@guidesAdminLayout(Messages("guides.page.edit"), guides, Some(pages -> g), breadcrumbs) {
+@guidesAdminLayout(Messages("guides.page.edit"), guides, Some(pages -> g), breadcrumbs, sidebar) {
 	@helper.form(action = action, 'class -> "entity-form form-horizontal") {
 	
     	@common.errorFlash(flash)

@@ -179,6 +179,21 @@ def emptyPage(guideId: Option[Int]): GuidesPage = {
 	}
 
 	/*
+	*	Delete a guide
+	*/
+	def deleteGuide(path: String): Int = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+			DELETE FROM
+				research_guide
+			WHERE 
+				path_research_guide = {p}
+			LIMIT 1
+			"""
+		).on('p -> path).executeUpdate()
+	}
+
+	/*
 	*	Create a new page
 	*/
 	def savePage(layout: String, name: String, path: String, menu: String, cypher: String, parent: Int): Option[Long] = DB.withConnection { implicit connection =>
@@ -223,6 +238,22 @@ def emptyPage(guideId: Option[Int]): GuidesPage = {
 			"""
 		).on('l -> layout, 'n -> name, 'p -> path, 'm -> menu, 'c -> cypher, 'parent -> parent, 'id -> id).executeUpdate()
 	}
+
+	/*
+	*	Delete a page
+	*/
+	def deletePage(path: String, idParent: Option[Int]): Int = DB.withConnection { implicit connection =>
+		SQL(
+			"""
+			DELETE FROM
+				research_guide_page
+			WHERE 
+				path_research_guide_page = {p}
+				AND id_research_guide = {idParent}
+			LIMIT 1
+			"""
+		).on('p -> path, 'idParent -> idParent).executeUpdate()
+	}
   
 /*
 *	Routes related action
@@ -237,7 +268,19 @@ def emptyPage(guideId: Option[Int]): GuidesPage = {
 
 	def edit(path: String) = userProfileAction { implicit userOpt => implicit request => 
 		g(path) match {
-			case Some(gui) => Ok(views.html.edit(formGuide.fill(gui), guides, guidesRoutes.editPost(path)))
+			case Some(gui) => Ok(views.html.edit(formGuide.fill(gui), gui, guides, guidesRoutes.editPost(path)))
+			case _ => Ok(views.html.list(guides))
+		}
+	}
+
+	def delete(path: String) = userProfileAction { implicit userOpt => implicit request => 
+		g(path) match {
+			case Some(gui) => {
+				deleteGuide(gui.path) match {
+					case 1 => Ok(views.html.list(guides))
+					case _ => BadRequest(views.html.list(guides))
+				}
+			}
 			case _ => Ok(views.html.list(guides))
 		}
 	}
@@ -247,12 +290,12 @@ def emptyPage(guideId: Option[Int]): GuidesPage = {
 			case Some(gui) => {
 				formGuide.bindFromRequest.fold(
 					errorForm => {
-						BadRequest(views.html.edit(errorForm, guides, guidesRoutes.editPost(path)))
+						BadRequest(views.html.edit(errorForm, gui, guides, guidesRoutes.editPost(path)))
 					}, {
 						case GuidesData(id, name, path, picture, description) =>
 							updateGuide(gui.objectId, name, path, picture, description) match {
 								case 1 => Ok(views.html.list(guides))
-								case _ => Ok(views.html.edit(formGuide.fill(gui), guides, guidesRoutes.editPost(path)))
+								case _ => Ok(views.html.edit(formGuide.fill(gui), gui, guides, guidesRoutes.editPost(path)))
 							}
 					}
 				)
@@ -368,5 +411,18 @@ def emptyPage(guideId: Option[Int]): GuidesPage = {
 			case _ => Ok(views.html.list(guides))
 		}
 		
+	}
+
+
+	def deletePages(gPath:String, path: String) = userProfileAction { implicit userOpt => implicit request => 
+		g(gPath) match {
+			case Some(gui) => {
+				deletePage(path, gui.objectId) match {
+					case 1 => Ok(views.html.p.list(pages(gPath), gui, guides))
+					case _ => BadRequest(views.html.p.list(pages(gPath), gui, guides))
+				}
+			}
+			case _ => Ok(views.html.list(guides))
+		}
 	}
 }
