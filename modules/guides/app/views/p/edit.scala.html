@@ -13,6 +13,9 @@ implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.
 
 @guidesAdminLayout(Messages("guides.page.edit"), guides, Some(pages -> g), breadcrumbs) {
 	@helper.form(action = action, 'class -> "entity-form form-horizontal") {
+	
+    	@common.errorFlash(flash)
+
         @formHelpers.csrfToken()
     	@p.renderForm(None, f)
 

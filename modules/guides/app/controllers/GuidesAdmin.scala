@@ -221,13 +221,13 @@ case class GuidesAdmin @Inject()(implicit globalConfig: global.GlobalConfig, bac
 			case Some(gui) => {
 				formPage.bindFromRequest.fold(
 			      errorForm => {
-			          Ok(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
+			          BadRequest(views.html.p.create(errorForm, gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
 			      },
 			      {
-			        case GuidesPage(id, layout, name, path, menu, cypher, parent) =>
-			        	savePage(layout, name, path, menu, cypher, gui.objectId.getOrElse(0)) match {
-			        		case Some(i) => Ok(views.html.p.list(pages(path), gui, guides))
-			        		case _ => Ok(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
+			        case GuidesPage(_, layout, name, path, menu, cypher, parent) =>
+			        	savePage(layout, name, path, menu, cypher, parent) match {
+			        		case Some(i) => Ok(views.html.p.list(pages(gPath), gui, guides))
+			        		case _ => BadRequest(views.html.p.create(formPage.fill(emptyPage(gui.objectId)), gui, pages(gPath), guides, guidesRoutes.createPagesPost(gPath)))
 			        	}
 						
 			      }

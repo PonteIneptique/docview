@@ -6,11 +6,11 @@
     @formHelpers.hiddenInput(f("objectId"))
     @formHelpers.lineInput(f(""), GuidesPage.NAME)
     @formHelpers.lineInput(f(""), GuidesPage.PATH)
-   	@formHelpers.choiceInput(f(""), GuidesPage.POSITION, GuidesPage.positions.map(row => {
+   	@formHelpers.choiceInput(f("position"), GuidesPage.POSITION, GuidesPage.positions.map(row => {
    		row -> Messages(fieldPrefix + "." + row)
 	}))
 
-   	@formHelpers.choiceInput(f(""), GuidesPage.LAYOUT, GuidesPage.layouts.map(row => {
+   	@formHelpers.choiceInput(f("layout"), GuidesPage.LAYOUT, GuidesPage.layouts.map(row => {
    		row -> Messages(fieldPrefix + "." + row)
 	}))
     @formHelpers.textInput(f(""), GuidesPage.CONTENT)
