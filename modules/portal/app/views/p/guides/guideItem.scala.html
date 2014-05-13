@@ -47,7 +47,11 @@
             }
             @conceptMode match { 
                 case "organisation" => {
-                    <a href="@action?parent=@d.id">
+                    @if(d.childCount.getOrElse(0) > 0) {
+                        <a href="@action?parent=@d.id">
+                    } else {
+                        <a>
+                    }
                 } 
                 case _ => {
                     <a>
