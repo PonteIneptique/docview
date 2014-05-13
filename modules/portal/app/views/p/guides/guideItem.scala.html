@@ -5,10 +5,7 @@
         ""
     }
     case d: HistoricalAgent => {
-        
         <div class="item-option  item-to-preview"><i class="glyphicon glyphicon-info-sign"></i></div>
-
-
         <a class="item-title">@d.toStringLang</a>
         <div class="hidden-md hidden-lg item-description">
             @d.model.descriptions.headOption.map { desc =>
@@ -29,16 +26,8 @@
                 }
             }
         </div>
-
-    }
-    case d: Repository => {
-        ""
-    }
-    case d: Country => {
-        ""
     }
     case d: Concept => {
-        <div class="item-option"><i class="item-nice-checkbox fa fa-square-o"></i></div>
         <span class="item-title keyword-title">
             @d.broaderTerms.map { bt =>
                 <span class="item-parent">
@@ -60,7 +49,6 @@
                 @d.toStringLang
             </a>
         </span>
-        <input class="item-checkbox" type="checkbox" value="5" />
     }
     case _ => {
         ""
