@@ -175,6 +175,13 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     }
   }
 
+  def getParams(request: Request[Any], eT: EntityType.Value ): Option[SearchParams] = {
+    request.getQueryString("parent") match {
+      case Some(parent) => Some(SearchParams(query = Some("parentId:" + parent), entities = List(eT)))
+      case _ => Some(SearchParams(query = Some("isTopLevel:true"), entities = List(eT)))
+    }
+  }
+
   def guideAuthority(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
     searchAction[HistoricalAgent](params, defaultParams = Some(SearchParams(entities=List(EntityType.HistoricalAgent)))
       ) {
@@ -201,8 +208,9 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   }
 
   def guideOrganization(template: GuidesPage, params: Map[String, String]) = userBrowseAction.async { implicit userDetails => implicit request =>
-    searchAction[Concept](params, defaultParams = Some(SearchParams(entities = List(EntityType.Concept))),
-      entityFacets = conceptFacets) {
+    searchAction[Concept](params, defaultParams = getParams(request, EntityType.Concept),
+      entityFacets = conceptFacets
+    ) {
         page => params => facets => _ => _ =>
       Ok(p.guides.keywords(template -> (guide(template.parent) -> menu(template.parent)), page, params))
     }.apply(request)
