@@ -3,7 +3,7 @@
 
 @page.items.map { case(item, hit) =>
     @defining(Some(hit.id)) { implicit descriptionId =>
-        <li class="item-wrapper">
+        <li class="facet">
             <input type="checkbox" name="@template._1.path + []" value="?" /> 
             @item match {
                 case d: DocumentaryUnit => {
