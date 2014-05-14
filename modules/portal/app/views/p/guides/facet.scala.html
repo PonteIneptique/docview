@@ -31,7 +31,7 @@
                 }
             }
         });
-        $(".facet-form").on("click", " ul a[href]", function(e) {
+        $(".facet-form").on("click", " ul.facet-list a[href]", function(e) {
             e.preventDefault();
             form = $(this);
             list = form.parent().parent("li.facet").children("ul");
@@ -43,6 +43,25 @@
                     {},
                     function(data) {
                         list.html(data);
+                    },
+                    "html"
+                );
+            }
+        });
+        $(".facet-form ul.facet-list").scroll(function(e) {
+            dat = $(this);
+            milestone = dat.children(".facet-scroll");
+            console.log(milestone);
+            offset = milestone.offset();
+            console.log((parseInt($(this).scrollTop()) + 10))
+            if((parseInt($(this).scrollTop()) + 10) > offset.top) {
+                milestone.show();
+                $.post(
+                    milestone.attr("data-target"),
+                    {},
+                    function(data) {
+                        milestone.after(data);
+                        milestone.remove();
                     },
                     "html"
                 );
