@@ -1,0 +1,55 @@
+@(template: (GuidesPage, (GuidesData, List[GuidesPage])))(implicit userOpt: Option[UserProfile], request: RequestHeader, prefs: utils.SessionPrefs, globalConfig: global.GlobalConfig, lang: Lang, flash: Flash)
+
+@import models.{GuidesPage, GuidesData}
+
+@js = {
+    <script type="text/javascript">
+    $(document).ready(function() {
+        $(".show-hierarchy").on("click", function(e) { e.preventDefault();
+            $(".content-results > .list-item").addClass("hierarchy");
+            $(this).addClass("active");
+            $(".show-list").removeClass("active");
+        });
+        $(".show-list").on("click", function(e) { e.preventDefault();
+            $(".content-results > .list-item").removeClass("hierarchy");
+            $(this).addClass("active");
+            $(".show-hierarchy").removeClass("active");
+        });
+    });
+    </script>
+}
+@facets = {
+    @for(page <- template._2._2) {
+        @if(page.position == "top" && page.layout != "md") {
+            <ul class="list-unstyled">
+                <li>
+                    <div class="facet-form" data-target="@controllers.portal.routes.Guides.layoutRetrieval(template._2._1.path, page.path)">
+                        <h1 class="nav-ehri nav-ehri-black">@page.name</h1>
+                        <ul class="list-unstyled nav-ehri-light-grey" id="@page.path">
+
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        }
+    }
+}
+@p.layout.guideLayoutFacet(template, facets= facets, scripts = js) {
+    <article>
+        <header>
+            <form role="form" action="@controllers.portal.routes.Guides.layoutRetrieval(template._2._1.path, template._1.path)">
+                <ul class="nav nav-pills nav-ehri nav-ehri-black nav-justified">
+                    <li><input class="nav-ehri nav-ehri-black nav-ehri-input" name="q" placeholder="Quick Search" /></li>
+                    <li><button type="submit" class="nav-ehri nav-ehri-black nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
+                </ul>
+            </form>
+        </header>
+        <section>
+            <section class="content-results">
+            </section>
+        </section>
+        <footer>
+        </footer>
+    </article>
+
+}

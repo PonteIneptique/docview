@@ -96,6 +96,7 @@ GET         /filter                         @controllers.portal.Portal.filter
 # Guide
 GET          /guides                        @controllers.portal.Guides.listGuides()
 GET         /guides/:guide                  @controllers.portal.Guides.home(guide: String)
+GET 		/guides/:guide/search			@controllers.portal.Guides.guideFacets(guide: String)
 GET         /guides/:guide/:layout          @controllers.portal.Guides.layoutRetrieval(guide: String, layout : String)
 POST        /guides/:guide/:layout          @controllers.portal.Guides.layoutAjaxRetrieval(guide: String, layout : String)
 

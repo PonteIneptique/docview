@@ -60,6 +60,17 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
 *
 */
 
+  def facetedPage(): GuidesPage = {
+    GuidesPage(
+      None,
+      "facet",
+      "guides.faceted",
+      "browse",
+      "top",
+      "",
+      0
+    )
+  }
   /*
   *  Return a menu
   */
@@ -123,26 +134,48 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
   /*
   *  Return a guide given its ID
   */
-  def guide(guideId: Int): GuidesData = DB.withConnection { implicit connection =>
-    SQL(
-      """
-        SELECT 
-          * 
-        FROM 
-          research_guide
-        WHERE 
-          id_research_guide = {id} 
-        LIMIT 1
-      """
-    ).on('id -> guideId).apply().headOption.map { row =>
-      GuidesData(
-        row[Option[Int]]("id_research_guide"),
-        row[String]("name_research_guide"),
-        row[String]("path_research_guide"),
-        row[Option[String]]("picture_research_guide"),
-        row[Option[String]]("description_research_guide")
-      )
-    }.head
+  def guide(guideId: Int=0, guidePath: String = ""): GuidesData = DB.withConnection { implicit connection =>
+    if(guideId > 0) {
+      SQL(
+        """
+          SELECT 
+            * 
+          FROM 
+            research_guide
+          WHERE 
+            id_research_guide = {id} 
+          LIMIT 1
+        """
+      ).on('id -> guideId).apply().headOption.map { row =>
+        GuidesData(
+          row[Option[Int]]("id_research_guide"),
+          row[String]("name_research_guide"),
+          row[String]("path_research_guide"),
+          row[Option[String]]("picture_research_guide"),
+          row[Option[String]]("description_research_guide")
+        )
+      }.head
+    } else {
+      SQL(
+        """
+          SELECT 
+            * 
+          FROM 
+            research_guide
+          WHERE 
+            path_research_guide = {path} 
+          LIMIT 1
+        """
+      ).on('path -> guidePath).apply().headOption.map { row =>
+        GuidesData(
+          row[Option[Int]]("id_research_guide"),
+          row[String]("name_research_guide"),
+          row[String]("path_research_guide"),
+          row[Option[String]]("picture_research_guide"),
+          row[Option[String]]("description_research_guide")
+        )
+      }.head
+    }
   }
 
 
@@ -340,6 +373,21 @@ def listGuides() = userProfileAction { implicit userOpt => implicit request =>
         NotFound(views.html.errors.pageNotFound())
       }
 
+    }
+    
+  }
+  /*
+  *   Faceted search
+  */
+  def guideFacets(guidePath: String) = {
+    val gui = guide(guidePath = guidePath)
+    gui.objectId match {
+      case Some(id) => userProfileAction { implicit userOpt => implicit request =>
+        Ok(p.guides.facet(facetedPage() -> (gui -> menu(id))))
+      }
+      case _ => Action { implicit request =>
+        NotFound(views.html.errors.pageNotFound())
+      }
     }
     
   }
