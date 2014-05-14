@@ -48,20 +48,25 @@
                 );
             }
         });
-        $(".facet-form ul.facet-list").scroll(function(e) {
+        $(".facet-form ul.facet-list").data("ajaxready", true).scroll(function() {
+            if($(this).data("ajaxready") == false) {
+                return;
+            }
             dat = $(this);
             milestone = dat.children(".facet-scroll");
-            console.log(milestone);
             offset = milestone.offset();
-            console.log((parseInt($(this).scrollTop()) + 10))
             if((parseInt($(this).scrollTop()) + 10) > offset.top) {
+                $(this).data("ajaxready", false);
                 milestone.show();
                 $.post(
                     milestone.attr("data-target"),
                     {},
                     function(data) {
-                        milestone.after(data);
                         milestone.remove();
+                        dat.append(data);
+                        if(dat.find(".facet-scroll") && dat.find(".facet-scroll").length == 1) {
+                            dat.data("ajaxready", true);
+                        }
                     },
                     "html"
                 );
