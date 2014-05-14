@@ -4,7 +4,7 @@
 @page.items.map { case(item, hit) =>
     @defining(Some(hit.id)) { implicit descriptionId =>
         <li class="facet">
-            <input type="checkbox" name="@template._1.path + []" value="?" /> 
+            <input type="checkbox" name="@template._1.path,[]" value="?" /> 
             @item match {
                 case d: DocumentaryUnit => {
                     ""
@@ -13,16 +13,18 @@
                     <a class="item-title">@d.toStringLang</a>
                 }
                 case d: Concept => {
-                    <span class="item-title keyword-title">
-                        @d.broaderTerms.map { bt =>
-                            <span class="item-parent">
-                                @bt.toStringLang
-                            </span>
-                        }
+                    <span class="item-title">
+                        @**
+                            @d.broaderTerms.map { bt =>
+                                <span class="item-parent">
+                                    @bt.toStringLang
+                                </span>
+                            }
+                        **@
                         @template._1.layout match { 
                             case "organisation" => {
                                 @if(d.childCount.getOrElse(0) > 0) {
-                                    <a href="controllers.portal.routes.Guides.layoutRetrieval(template._2._1.path, template._1.path), template._1.layout)?parent=@d.id">
+                                    <a href="@controllers.portal.routes.Guides.layoutRetrieval(template._2._1.path, template._1.path)?parent=@d.id">
                                 } else {
                                     <a>
                                 }
@@ -34,6 +36,9 @@
                             @d.toStringLang
                         </a>
                     </span>
+                    @if(d.childCount.getOrElse(0) > 0) {
+                        <ul></ul>
+                    }
                 }
                 case _ => {
                     ""

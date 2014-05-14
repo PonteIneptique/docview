@@ -36,8 +36,17 @@
 				</div>
 			</div>
 		</div>
-		<footer class="col-md-4" id="right-bar">
-			@guideSidebar(guide._1.path, guide._2)
+		<footer id="right-bar" class="container">
+			<div class="well">
+				<hr />
+				<ul class="nav">
+					@for(page <- guide._2._2) {
+						@if(page.position == "side") {
+							<li><a href="@controllers.portal.routes.Guides.layoutRetrieval(guide._2._1.path, page.path)">@page.name</a></li>
+						}
+					}
+				</ul>
+			</div>
 		</footer>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script src="@controllers.core.routes.Assets.at("bootstrap/js/bootstrap.min.js")"></script>

@@ -60,12 +60,20 @@
 			}			
 		}
 		&.facet {
-			display:inline-block;
+			display:block;
 			margin:0 0;
-			padding:5px 5px;
-			min-height:auto;
-			& > a {
+			padding:2px 2px;
+			min-height:10px;
+			border-left:none;
+			border-right:none;
+			li {
+				list-style:none;
+			}
+			& > a , a {
 				display:inline;
+				margin:0 0;
+				padding:0;
+				color:white;
 			}
 		}
 	}
