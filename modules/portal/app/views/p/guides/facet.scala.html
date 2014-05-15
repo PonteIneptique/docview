@@ -5,6 +5,25 @@
 @js = {
     <script type="text/javascript">
     $(document).ready(function() {
+        $(".facet-form h1 .search").on("click", function(e) {
+            e.preventDefault();
+            $(this).parents(".facet-form").children(".facet-search").toggle();
+        });
+        $(".facet-form .facet-search button[type='submit']").on("click", function(e) {
+            e.preventDefault();
+            dat = $(this);
+            form = dat.parents(".facet-form");
+            Q = form.find("input[name='q']").val();
+            $.post(
+                form.attr("data-target") + "?q=" + Q,
+                {},
+                function(data) {
+                    form.children("ul.facet-list").html(data).show();
+                },
+                "html"
+            );
+        });
+                   
         $(".facet-form h1 .more").on("click", function(e) {
             e.preventDefault();
             dat = $(this);
@@ -50,11 +69,13 @@
         });
         $(".facet-form ul.facet-list").each(function() {
             $(this).data("ajaxready", true).scroll(function() {
-                if($(this).data("ajaxready") == false) {
-                    return;
-                }
                 dat = $(this);
                 milestone = dat.children(".facet-scroll");
+
+                if($(this).data("ajaxready") == false || milestone.length == 0) {
+                    return;
+                }
+                
                 offset = milestone.position();
 
                 if(($(this).height() + 5) > offset.top) {
@@ -92,7 +113,7 @@
                         <ul class="nav nav-pills nav-ehri nav-grey-black nav-justified facet-search">
                             <li><input class="nav-ehri nav-ehri-grey nav-ehri-input" name="q" placeholder="Quick Search" /></li>
                             <li><button type="submit" class="nav-ehri nav-ehri-grey nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
-                            <li><a class="nav-ehri nav-ehri-grey nav-ehri-input">Reset</a></li>
+                            <li><button class="nav-ehri nav-ehri-grey nav-ehri-input"><span class="glyphicon glyphicon-remove"></span><span class="text-hide">Reset</span></button></li>
                         </ul>
                         <ul class="list-unstyled nav-ehri nav-ehri-light-grey facet-list" id="@page.path">
 
