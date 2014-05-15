@@ -64,7 +64,7 @@ case class Guides @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     GuidesPage(
       None,
       "facet",
-      "guides.faceted",
+      "portal.guides.faceted",
       "browse",
       "top",
       "",

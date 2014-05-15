@@ -13,6 +13,7 @@
 
 				}
 			}
+			<li><a @if(location == "browse") { class="active" } href="@controllers.portal.routes.Guides.guideFacets(menu._1.path)"> @Messages("portal.guides.faceted")</a></li>
 		</ul>
 	</div>
 </div>
