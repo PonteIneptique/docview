@@ -7,7 +7,25 @@
     $(document).ready(function() {
         $(".facet-form h1 .search").on("click", function(e) {
             e.preventDefault();
-            $(this).parents(".facet-form").children(".facet-search").toggle();
+            cross = $(this).children(".glyphicon");
+            if(cross.hasClass("glyphicon-search")) {
+                $(this).parents(".facet-form").children(".facet-search").show();
+                cross.removeClass("glyphicon-search").addClass("glyphicon-remove");
+            } else {
+                $(this).parents(".facet-form").children(".facet-search").hide();
+                cross.removeClass("glyphicon-remove").addClass("glyphicon-search");
+                $.post(
+                    form.attr("data-target"),
+                    {},
+                    function(data) {
+                        form.children("ul.facet-list").html(data).show();
+                        if(cross.hasClass("glyphicon-plus-sign")) {
+                            cross.removeClass("glyphicon-plus-sign").addClass("glyphicon-minus-sign");
+                        }
+                    },
+                    "html"
+                );
+            }
         });
         $(".facet-form .facet-search button[type='submit']").on("click", function(e) {
             e.preventDefault();
@@ -75,7 +93,7 @@
                 if($(this).data("ajaxready") == false || milestone.length == 0) {
                     return;
                 }
-                
+
                 offset = milestone.position();
 
                 if(($(this).height() + 5) > offset.top) {
@@ -113,7 +131,6 @@
                         <ul class="nav nav-pills nav-ehri nav-grey-black nav-justified facet-search">
                             <li><input class="nav-ehri nav-ehri-grey nav-ehri-input" name="q" placeholder="Quick Search" /></li>
                             <li><button type="submit" class="nav-ehri nav-ehri-grey nav-ehri-input"><span class="glyphicon glyphicon-search"></span><span class="text-hide">Search</span></button></li>
-                            <li><button class="nav-ehri nav-ehri-grey nav-ehri-input"><span class="glyphicon glyphicon-remove"></span><span class="text-hide">Reset</span></button></li>
                         </ul>
                         <ul class="list-unstyled nav-ehri nav-ehri-light-grey facet-list" id="@page.path">
 
