@@ -3,7 +3,7 @@ package backend.rest
 import backend.{Page, EventHandler, Social, ApiUser}
 import scala.concurrent.{ExecutionContext, Future}
 import utils.{FutureCache, PageParams, ListParams}
-import models.{Link, Annotation, UserProfile}
+import models.{VirtualUnit, Link, Annotation, UserProfile}
 import defines.EntityType
 import models.json.RestReadable
 import play.api.libs.json.{JsValue, Json, Reads}
@@ -27,6 +27,9 @@ trait RestSocial extends Social with RestDAO {
   private def watchingUrl(userId: String) = enc(requestUrl, userId, "watching")
   private def isFollowingUrl(userId: String, otherId: String) = enc(requestUrl, userId, "isFollowing", otherId)
   private def isWatchingUrl(userId: String, otherId: String) = enc(requestUrl, userId, "isWatching", otherId)
+  private def blockedUrl(userId: String) = enc(requestUrl, userId, "blocked")
+  private def blockUrl(userId: String, otherId: String) = enc(requestUrl, userId, "block", otherId)
+  private def isBlockingUrl(userId: String, otherId: String) = enc(requestUrl, userId, "isBlocking", otherId)
 
   def follow(userId: String, otherId: String)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Unit] = {
     userCall(followUrl(userId, otherId)).post("").map { r =>
@@ -120,6 +123,43 @@ trait RestSocial extends Social with RestDAO {
     }
   }
 
+  def listBlocked(userId: String, params: ListParams = ListParams.empty)(implicit apiUser: ApiUser, rd: RestReadable[AnyModel], executionContext: ExecutionContext): Future[List[AnyModel]] = {
+    userCall(enc(requestUrl, userId, "blocked")).withQueryString(params.toSeq: _*).get().map { r =>
+      checkErrorAndParse(r)(Reads.list(rd.restReads))
+    }
+  }
+
+  def pageBlocked(userId: String, params: PageParams = PageParams.empty)(implicit apiUser: ApiUser, rd: RestReadable[AnyModel], executionContext: ExecutionContext): Future[Page[AnyModel]] = {
+    userCall(enc(requestUrl, userId, "blocked", "page")).withQueryString(params.toSeq: _*).get().map { r =>
+      checkErrorAndParse(r)(Page.pageReads(rd.restReads))
+    }
+  }
+
+  def block(userId: String, otherId: String)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Unit] = {
+    userCall(blockUrl(userId, otherId)).post("").map { r =>
+      Cache.set(isBlockingUrl(userId, otherId), true, cacheTime)
+      Cache.remove(blockedUrl(userId))
+      checkError(r)
+    }
+  }
+
+  def unblock(userId: String, otherId: String)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Unit] = {
+    userCall(blockUrl(userId, otherId)).delete().map { r =>
+      Cache.set(isBlockingUrl(userId, otherId), false, cacheTime)
+      Cache.remove(blockedUrl(userId))
+      checkError(r)
+    }
+  }
+
+  def isBlocking(userId: String, otherId: String)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Boolean] = {
+    val url = isBlockingUrl(userId, otherId)
+    FutureCache.getOrElse[Boolean](url) {
+      userCall(url).get().map { r =>
+        checkErrorAndParse[Boolean](r)
+      }
+    }
+  }
+
   def userAnnotations(userId: String, params: PageParams = PageParams.empty)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Page[Annotation]] = {
     userCall(enc(requestUrl, userId, EntityType.Annotation, "page")).get().map { r =>
       checkErrorAndParse(r)(Page.pageReads(Annotation.Converter.restReads))
@@ -129,6 +169,12 @@ trait RestSocial extends Social with RestDAO {
   def userLinks(userId: String, params: PageParams = PageParams.empty)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Page[Link]] = {
     userCall(enc(requestUrl, userId, EntityType.Link, "page")).get().map { r =>
       checkErrorAndParse(r)(Page.pageReads(Link.Converter.restReads))
+    }
+  }
+
+  def userBookmarks(userId: String, params: PageParams = PageParams.empty)(implicit apiUser: ApiUser, executionContext: ExecutionContext): Future[Page[VirtualUnit]] = {
+    userCall(enc(requestUrl, EntityType.VirtualUnit, "forUser", userId)).get().map { r =>
+      checkErrorAndParse(r)(Page.pageReads(VirtualUnit.Converter.restReads))
     }
   }
 }
