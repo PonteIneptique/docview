@@ -48,29 +48,32 @@
                 );
             }
         });
-        $(".facet-form ul.facet-list").data("ajaxready", true).scroll(function() {
-            if($(this).data("ajaxready") == false) {
-                return;
-            }
-            dat = $(this);
-            milestone = dat.children(".facet-scroll");
-            offset = milestone.offset();
-            if((parseInt($(this).scrollTop()) + 10) > offset.top) {
-                $(this).data("ajaxready", false);
-                milestone.show();
-                $.post(
-                    milestone.attr("data-target"),
-                    {},
-                    function(data) {
-                        milestone.remove();
-                        dat.append(data);
-                        if(dat.find(".facet-scroll") && dat.find(".facet-scroll").length == 1) {
-                            dat.data("ajaxready", true);
-                        }
-                    },
-                    "html"
-                );
-            }
+        $(".facet-form ul.facet-list").each(function() {
+            $(this).data("ajaxready", true).scroll(function() {
+                if($(this).data("ajaxready") == false) {
+                    return;
+                }
+                dat = $(this);
+                milestone = dat.children(".facet-scroll");
+                offset = milestone.position();
+
+                if(($(this).height() + 5) > offset.top) {
+                    $(this).data("ajaxready", false);
+                    milestone.show();
+                    $.post(
+                        milestone.attr("data-target"),
+                        {},
+                        function(data) {
+                            milestone.remove();
+                            dat.append(data);
+                            if(dat.find(".facet-scroll") && dat.find(".facet-scroll").length == 1) {
+                                dat.data("ajaxready", true);
+                            }
+                        },
+                        "html"
+                    );
+                }
+            });
         });
     });
     </script>
