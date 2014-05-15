@@ -1,14 +1,11 @@
-@(item: models.base.AnyModel, hit: utils.search.SearchHit)(implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.GlobalConfig, lang: Lang)
+@(item: models.base.AnyModel, hit: utils.search.SearchHit, action: Call, conceptMode:String = "default")(implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.GlobalConfig, lang: Lang)
 
 @item match {
     case d: DocumentaryUnit => {
         ""
     }
     case d: HistoricalAgent => {
-        
         <div class="item-option  item-to-preview"><i class="glyphicon glyphicon-info-sign"></i></div>
-
-
         <a class="item-title">@d.toStringLang</a>
         <div class="hidden-md hidden-lg item-description">
             @d.model.descriptions.headOption.map { desc =>
@@ -29,25 +26,29 @@
                 }
             }
         </div>
-
-    }
-    case d: Repository => {
-        ""
-    }
-    case d: Country => {
-        ""
     }
     case d: Concept => {
-        <div class="item-option"><i class="item-nice-checkbox fa fa-square-o"></i></div>
-        <a class="item-title keyword-title">
+        <span class="item-title keyword-title">
             @d.broaderTerms.map { bt =>
                 <span class="item-parent">
                     @bt.toStringLang
                 </span>
             }
-            @d.toStringLang
-        </a>
-        <input class="item-checkbox" type="checkbox" value="5" />
+            @conceptMode match { 
+                case "organisation" => {
+                    @if(d.childCount.getOrElse(0) > 0) {
+                        <a href="@action?parent=@d.id">
+                    } else {
+                        <a>
+                    }
+                } 
+                case _ => {
+                    <a>
+                }
+            }
+                @d.toStringLang
+            </a>
+        </span>
     }
     case _ => {
         ""

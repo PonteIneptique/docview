@@ -23,6 +23,9 @@
 										case Some(desc) => {
 											@Html(views.Helpers.renderMarkdown(desc))
 										}
+										case _ => {
+											""
+										}
 									}
 								</div>
 							</li>
