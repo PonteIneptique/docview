@@ -8,7 +8,12 @@ implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.
     @helper.form(action = action, 'class -> "entity-form form-horizontal") {
         @formHelpers.csrfToken()
         @userProfile.renderForm(item, f)
+
+<<<<<<< HEAD:modules/core/app/views/userProfile/edit.scala.html
+        @formHelpers.submitButtonWithLogMessageInput(Messages("submitButton.updateUserProfile"))
+=======
         @formHelpers.submitButtonWithLogMessageInput(Messages("userProfile.update.submit"), cancel = views.Helpers.linkToOpt(item))
+>>>>>>> upstream/master:modules/users/app/views/userProfile/edit.scala.html
 	}
 		
 } {
