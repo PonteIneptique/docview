@@ -28,7 +28,7 @@ case class AdminSearch @Inject()(implicit globalConfig: global.GlobalConfig, sea
     List(
       FieldFacetClass(
         key = IsadG.LANG_CODE,
-        name = Messages(IsadG.FIELD_PREFIX + "." + IsadG.LANG_CODE),
+        name = Messages("documentaryUnit." + IsadG.LANG_CODE),
         param = "lang",
         render = (s: String) => Helpers.languageCodeToName(s)
       ),
@@ -73,7 +73,7 @@ case class AdminSearch @Inject()(implicit globalConfig: global.GlobalConfig, sea
   private implicit val anyModelReads = AnyModel.Converter.restReads
 
   def search = searchAction[AnyModel](
-      defaultParams = Some(SearchParams(sort = Some(SearchOrder.Score))),
+      defaultParams = SearchParams(sort = Some(SearchOrder.Score)),
       entityFacets = entityFacets) {
         page => params => facets => implicit userOpt => implicit request =>
     render {

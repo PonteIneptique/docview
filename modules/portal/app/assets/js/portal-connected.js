@@ -94,7 +94,7 @@ jQuery(function ($) {
 		var followFunc = jsRoutes.controllers.portal.Social.followUserPost,
 		    unfollowFunc = jsRoutes.controllers.portal.Social.unfollowUserPost,
 		    followerListFunc = jsRoutes.controllers.portal.Social.followersForUser,
-		    $elem = $(e.target),
+		    $elem = $(this),
 		    id = $elem.data("item"),
 		    follow = $elem.hasClass("follow");
 
@@ -134,10 +134,9 @@ jQuery(function ($) {
 
 		var watchFunc = jsRoutes.controllers.portal.Social.watchItemPost,
 		    unwatchFunc = jsRoutes.controllers.portal.Social.unwatchItemPost,
-		    $elem = $(e.target),
+		    $elem = $(this),
 		    id = $elem.data("item"),
 		    watch = $elem.hasClass("watch");
-
 		var call, $other;
 		if (watch) {
 		  call = watchFunc;
@@ -269,15 +268,10 @@ jQuery(function ($) {
     e.preventDefault();
     var $form = $(this);
     var action = $form.attr("action");
-    $.ajax({
-      url: $form.attr("action"),
-      data: $form.serialize(),
-      method: "POST",
-      success: function(data) {
-        showAnnotationControl($form);
-        $form.parents(".annotation-set").find(".annotation-list").append(data);
-        $form.remove();
-      }
+    $.post($form.attr("action"), $form.serialize(), function(data) {
+      showAnnotationControl($form);
+      $form.parents(".annotation-set").find(".annotation-list").append(data);
+      $form.remove();
     });
   });
 
@@ -329,14 +323,9 @@ jQuery(function ($) {
     if($form.parents(".description-annotations") !== "undefined" && $form.parents(".description-annotations").length >= 1) {
       action += "?isField=false";
     }
-    $.ajax({
-      url: action,
-      data: $form.serialize(),
-      method: "POST",
-      success: function(data) {
-        $form.next(".annotate-field").show()
-        $form.replaceWith(data);
-      }
+    $.post(action, $form.serialize(), function(data) {
+      $form.next(".annotate-field").show()
+      $form.replaceWith(data);
     });
   });
 

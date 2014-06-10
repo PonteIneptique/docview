@@ -41,15 +41,13 @@ object AccessPointLink {
  */
 trait Linking[MT <: AnyModel] extends Read[MT] with Search {
 
-  def linkSelectAction(id: String, toType: String)(
+  def linkSelectAction(id: String, toType: EntityType.Value)(
       f: MT => ItemPage[(AnyModel,SearchHit)] => SearchParams => List[AppliedFacet] => EntityType.Value => Option[UserProfile] => Request[AnyContent] => SimpleResult)(implicit rd: RestReadable[MT]) = {
     withItemPermission.async[MT](id, PermissionType.Annotate, contentType) {
         item => implicit userOpt => implicit request =>
-      val linkSrcEntityType = EntityType.withName(toType)
-      searchAction[AnyModel](defaultParams = Some(SearchParams(entities = List(linkSrcEntityType), excludes=Some(List(id))))) {
-          page => params => facets => _ => _ =>
-        f(item)(page)(params)(facets)(linkSrcEntityType)(userOpt)(request)
-      }.apply(request)
+      find[AnyModel](defaultParams = SearchParams(entities = List(toType), excludes=Some(List(id)))).map { r =>
+        f(item)(r.page)(r.params)(r.facets)(toType)(userOpt)(request)
+      }
     }
   }
 
