@@ -1,10 +1,6 @@
 @(item: DocumentaryUnit, desc: DocumentaryUnitDescriptionF)(implicit userOpt: Option[UserProfile], req: RequestHeader, globalConfig: global.GlobalConfig, lang: Lang, flash: Flash)
 
     @extrascripts = {
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
-        <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular-sanitize.min.js"></script>
-        <script src="@controllers.core.routes.Assets.at("js/ui-bootstrap-0.10.0.min.js")" type="text/javascript"></script>
-        <script src="@controllers.archdesc.routes.Assets.at("js/AccessPointLinker.js")" type="text/javascript"></script>
 
         @helper.javascriptRouter("jsRoutes")(
             controllers.core.routes.javascript.Application.get,
@@ -20,6 +16,14 @@
             controllers.archdesc.routes.javascript.DocumentaryUnits.deleteLink,
             controllers.archdesc.routes.javascript.DocumentaryUnits.deleteLinkAndAccessPoint
         )
+        @**
+        @helper.requireJs(
+             core =controllers.core.routes.Assets.at("js/lib/require.js").url,
+             module = controllers.core.routes.Assets.at("js/accesspoints.js").url,
+             productionFolderPrefix = "",
+             folder = "js"
+         )
+        **@
         <style type="text/css">
             .modal-dialog { width: 80%;}
         </style>

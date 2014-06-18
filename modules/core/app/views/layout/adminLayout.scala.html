@@ -21,8 +21,8 @@
     </head>
     <body data-spy="scroll" data-target="#form-nav-sidebar">
         @helper.requireJs(
-             core =controllers.core.routes.Assets.at("js/lib/require.js").url,
-             module = controllers.core.routes.Assets.at("js/admin.js").url,
+             core = controllers.core.routes.Assets.at("js/lib/require.js").url,
+             module = controllers.core.routes.Assets.at("js/admin").url,
              folder = "js"
          )
         @scripts

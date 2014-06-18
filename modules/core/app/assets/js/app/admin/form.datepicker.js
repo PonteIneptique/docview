@@ -11,8 +11,7 @@ define(["jquery"], function($) {
     var regResults = re.exec(src),
         regResults2 = re2.exec(src),
         precision = "";
-
-    if(regResults2.length == 4) {
+    if(regResults2 != null && regResults2.length == 4) {
       precision = "descriptions[" + regResults2[1] + "]." + regResults2[2] + ".dates[" + regResults2[3] + "]." + name
       precision = "*[name='" + precision + "']";
     } else {
@@ -42,7 +41,6 @@ define(["jquery"], function($) {
       target.datepicker({
         startView: defaultStartView,
         format: function() {
-          console.log(defaultFormat(target));
           return defaultFormat(target);
         },
         minViewMode : function() {

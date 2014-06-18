@@ -3,8 +3,10 @@
 
 requirejs.config({
     baseUrl: "/admin/assets/js",
+    appDir : "/admin/assets/js",
+    dir : "/admin/assets/js-min"
     paths: {
-      jquery: "lib/jquery",
+      jquery: "//cdn.jsdelivr.net/jquery/1.7.1/jquery.min",
       bootstrap: "lib/bootstrap.min",
       selectTwo: "lib/select2.min",
       datepicker: "lib/bootstrap-datepicker",
