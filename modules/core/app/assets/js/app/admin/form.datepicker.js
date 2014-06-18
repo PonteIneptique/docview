@@ -1,4 +1,4 @@
-$(document).ready(function() {
+define(["jquery"], function($) {
   //Shared variables
   var re = /(\w+)\.dates\[([0-9]+)\]/;
   var re2 = /descriptions\[([0-9]+)\]\.(\w+)\.dates\[([0-9]+)\]/;
