@@ -2,9 +2,9 @@
 
 
 requirejs.config({
-    baseUrl: "/admin/assets/js",
+    baseUrl: ".",
     appDir : "/admin/assets/js",
-    dir : "/admin/assets/js-min"
+    dir : "/admin/assets/js"
     paths: {
       jquery: "//cdn.jsdelivr.net/jquery/1.7.1/jquery.min",
       bootstrap: "lib/bootstrap.min",
