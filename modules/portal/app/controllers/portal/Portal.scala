@@ -73,9 +73,7 @@ case class Portal @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
     Ok(Json.obj(
       "numPages" -> page.numPages,
       "page" -> page.page,
-      "items" -> page.items.map { case (id, name, t) =>
-        Json.arr(id, name, t.toString)
-      }
+      "items" -> page.items
     ))
   }
 
@@ -99,6 +97,7 @@ case class Portal @Inject()(implicit globalConfig: global.GlobalConfig, searchDi
       case EntityType.Country => Redirect(portalRoutes.browseCountry(id))
       case EntityType.Link => Redirect(portalRoutes.browseLink(id))
       case EntityType.Annotation => Redirect(portalRoutes.browseAnnotation(id))
+      case EntityType.Vocabulary => Redirect(portalRoutes.browseVocabulary(id))
       case _ => NotFound(renderError("errors.pageNotFound", pageNotFound()))
     }
   }

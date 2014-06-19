@@ -34,17 +34,44 @@ case class DocumentaryUnits @Inject()(implicit globalConfig: global.GlobalConfig
   import solr.facet._
 
   private val entityFacets: FacetBuilder = { implicit request =>
-    val prefix = EntityType.DocumentaryUnit.toString
     List(
       QueryFacetClass(
         key="childCount",
-        name=Messages(prefix + ".searchInside"),
+        name=Messages("documentaryUnit.searchInside"),
         param="items",
-        render=s => Messages(prefix + "." + s),
+        render=s => Messages("documentaryUnit." + s),
         facets=List(
           SolrQueryFacet(value = "false", solrValue = "0", name = Some("noChildItems")),
           SolrQueryFacet(value = "true", solrValue = "[1 TO *]", name = Some("hasChildItems"))
         )
+      ),
+      FieldFacetClass(
+        key=IsadG.LANG_CODE,
+        name=Messages("documentaryUnit." + IsadG.LANG_CODE),
+        param="lang",
+        render=Helpers.languageCodeToName,
+        display = FacetDisplay.DropDown
+      ),
+      FieldFacetClass(
+        key="holderName",
+        name=Messages("documentaryUnit.heldBy"),
+        param="holder",
+        sort = FacetSort.Name,
+        display = FacetDisplay.DropDown
+      ),
+      FieldFacetClass(
+        key="countryCode",
+        name=Messages("repository.countryCode"),
+        param="country",
+        render= (s: String) => Helpers.countryCodeToName(s),
+        sort = FacetSort.Name,
+        display = FacetDisplay.DropDown
+      ),
+      FieldFacetClass(
+        key="copyrightStatus",
+        name=Messages("copyrightStatus.copyright"),
+        param="copyright",
+        render=s => Messages("copyrightStatus." + s)
       ),
       QueryFacetClass(
         key="charCount",
@@ -58,26 +85,6 @@ case class DocumentaryUnits @Inject()(implicit globalConfig: global.GlobalConfig
         ),
         sort = FacetSort.Fixed,
         display = FacetDisplay.List
-      ),
-      FieldFacetClass(
-        key=IsadG.LANG_CODE,
-        name=Messages(prefix + "." + IsadG.LANG_CODE),
-        param="lang",
-        render=Helpers.languageCodeToName,
-        display = FacetDisplay.Choice
-      ),
-      FieldFacetClass(
-        key="holderName",
-        name=Messages(prefix + ".heldBy"),
-        param="holder",
-        sort = FacetSort.Name,
-        display = FacetDisplay.DropDown
-      ),
-      FieldFacetClass(
-        key="copyrightStatus",
-        name=Messages("copyrightStatus.copyright"),
-        param="copyright",
-        render=s => Messages("copyrightStatus." + s)
       ),
       FieldFacetClass(
         key="scope",

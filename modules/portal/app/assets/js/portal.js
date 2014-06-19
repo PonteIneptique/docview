@@ -32,57 +32,6 @@ EhriJs.alertInfo = function(msg) {
 
 jQuery(function ($) {
 
-  /*
-  *   Breadcrumb and collapsible
-  */
-$(".breadcrumb.collapsible").each(function(e) {
-  var $ol = $(this);
-  var $width = $ol.width();
-  var $li = $ol.find("li");
-  var $padding = parseInt($li.outerWidth() - $li.width())
-  if ($li.length !== "undefined" && $li.length > 0) {
-    var $max = $width / $li.length;
-    $max = $max - $padding;
-    $li.find("a:visible").css("max-width", $max);
-    $li.data("max-width", $max);
-  }
-});
-$(".breadcrumb.collapsible > li").hover(function() {
-    var $actual = $(this);
-    var $offset = $actual.offset();
-    var $right = $offset.left;
-    var $top = $offset.top;
-    var $prev = $actual.prev();
-    if($prev.length !="undefined"&& $prev.length === 1) {
-      $right = $prev.offset().left + $prev.outerWidth();
-      $top = $prev.offset().top;
-    }
-    $actual.next().css("margin-left", $actual.outerWidth())
-    $actual.css({
-      "top": $top, 
-      "left": $right,
-      "position": "fixed",
-      "z-index" : 9000
-    });
-    $actual.find("a:visible").css("max-width", "");
-
-  } , function() {
-    var $actual = $(this);
-    $actual.next().css("margin-left", 0);
-    $actual.before().css("z-index", "");
-    $actual.css({
-      "top": 0, 
-      "left": 0,
-      "position": "relative",
-      "z-index" : ""
-    });
-    $actual.find("a:visible").css("max-width", $actual.data("max-width"));
-});
-
-  /*
-  *   End Breadcrumb and collapsible
-  */
-
   var $dataPolicyWidget = $("#data-policy"),
       COOKIE_NAME = "ehriDataPolicy";
 
@@ -154,11 +103,11 @@ $(".panel-history").each(function() {
 
                               for (var i=0; i<parsedResponse.items.length; i++) {
                                 //Need to check if item not already in the db
-                                if($.inArray( parsedResponse.items[i][1] , alreadyResult) === -1) {
+                                if($.inArray( parsedResponse.items[i].name , alreadyResult) === -1) {
                                   result.push({
-                                    name: parsedResponse.items[i][1],
-                                    value: parsedResponse.items[i][1],
-                                    href : jsRoutes.controllers.portal.Portal.browseItem(parsedResponse.items[i][2], parsedResponse.items[i][0]).url
+                                    name: parsedResponse.items[i].name,
+                                    value: parsedResponse.items[i].name,
+                                    href : jsRoutes.controllers.portal.Portal.browseItem(parsedResponse.items[i].type, parsedResponse.items[i].id).url
                                   });
                                   alreadyResult.push(parsedResponse.items[i][1]);
                                 }
@@ -189,18 +138,6 @@ $(".panel-history").each(function() {
 });
   //Need to reenable enter for getSearch
 
-/*
-  Search helpers
-*/
-$(".page-content").on("click", ".search-helper-toggle", function () {
-  $("#search-helper").toggle();
-});
-
-$(".page-content").on("click", "#search-helper .close", function(e) {
-  e.preventDefault();
-  $("#search-helper").toggle();
-});
-
 /* 
   Loadings
 */
@@ -212,15 +149,18 @@ $loader = $( "<div></div>" ).addClass("text-center loader-container").append($("
         $text = $(".text", $link),
         $inverse = $link.data("inverse-text");
     var $container = $link.parent(),
-        $data = $(".content-load-data", $container);
+        $data = $(".content-load-data", $container),
+        $place = $(".content-load-placeholder", $container);
     if ($container.hasClass("loaded")) {
       $data.toggle(300);
+      $place.toggle(300);
       $link.data("inverse-text", $text.text());
       $text.text($inverse);
     } else {
       $link.addClass("loading");
       $.get(this.href, function(data) {
         $data.append(data).show(300);
+        $place.hide(300);
         $container.addClass("loaded");
         $link.removeClass("loading");
         $link.data("inverse-text", $text.text());
