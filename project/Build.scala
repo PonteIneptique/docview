@@ -13,6 +13,7 @@ import com.typesafe.sbt.less.Import._
 import com.typesafe.sbt.rjs.Import._
 import com.typesafe.sbt.digest.Import._
 import com.typesafe.sbt.gzip.Import._
+import com.typesafe.sbt.mocha.Import._
 
 object ApplicationBuild extends Build {
 
